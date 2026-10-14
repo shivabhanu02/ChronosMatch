@@ -3,6 +3,7 @@ import time
 
 from src.orders import Order
 from src.order_message import encode_order, decode_order
+from src.order_message_bus import OrderMessageBus
 
 
 def generate_sample_orders():
@@ -38,21 +39,39 @@ def generate_sample_orders():
 
 
 def run_simulation():
-    """Generate orders and verify binary encoding and decoding."""
+    """Process sample orders through the binary message bus."""
     orders = generate_sample_orders()
     processed_orders = []
 
-    for order in orders:
-        message = encode_order(order)
-        decoded_order = decode_order(message)
-        processed_orders.append(decoded_order)
+    # Create a message bus with enough capacity for all sample orders.
+    bus = OrderMessageBus(capacity=len(orders))
 
-        print(
-            f"Order {decoded_order.order_id}: "
-            f"{decoded_order.side} {decoded_order.quantity} "
-            f"{decoded_order.symbol} at ₹{decoded_order.price:.2f} "
-            f"| Message size: {len(message)} bytes"
-        )
+    try:
+        # Encode each order and write its binary message to the bus.
+        for order in orders:
+            message = encode_order(order)
+            bus.write(message)
+
+        print(f"Orders added to message bus: {len(orders)}")
+
+        # Read messages in FIFO order and reconstruct the original orders.
+        while not bus.is_empty():
+            message = bus.read()
+            decoded_order = decode_order(message)
+            processed_orders.append(decoded_order)
+
+            print(
+                f"Order {decoded_order.order_id}: "
+                f"{decoded_order.side} {decoded_order.quantity} "
+                f"{decoded_order.symbol} at ₹{decoded_order.price:.2f} "
+                f"| Message size: {len(message)} bytes"
+            )
+
+    finally:
+        # Always release the memory-mapped buffer.
+        bus.close()
+
+    print(f"\nTotal orders processed: {len(processed_orders)}")
 
     return processed_orders
 
