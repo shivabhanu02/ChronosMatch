@@ -185,3 +185,65 @@ def test_market_simulator_executes_expected_trade():
     assert trade["quantity"] == 3
     assert trade["buy_order_id"] == 2
     assert trade["sell_order_id"] == 1
+
+def test_best_bid_uses_highest_price_after_multiple_levels():
+    book = OrderBook()
+
+    low_bid = make_order(1, "ABC", "BUY", 98.0, 5, 1)
+    high_bid = make_order(2, "ABC", "BUY", 103.0, 5, 2)
+    middle_bid = make_order(3, "ABC", "BUY", 100.0, 5, 3)
+
+    book.add_order(low_bid)
+    book.add_order(high_bid)
+    book.add_order(middle_bid)
+
+    assert book.get_best_bid("ABC") is high_bid
+
+
+def test_best_ask_uses_lowest_price_after_multiple_levels():
+    book = OrderBook()
+
+    high_ask = make_order(1, "ABC", "SELL", 105.0, 5, 1)
+    low_ask = make_order(2, "ABC", "SELL", 99.0, 5, 2)
+    middle_ask = make_order(3, "ABC", "SELL", 102.0, 5, 3)
+
+    book.add_order(high_ask)
+    book.add_order(low_ask)
+    book.add_order(middle_ask)
+
+    assert book.get_best_ask("ABC") is low_ask
+
+
+def test_best_ask_updates_after_best_price_is_fully_consumed():
+    book = OrderBook()
+
+    first_ask = make_order(1, "ABC", "SELL", 100.0, 2, 1)
+    second_ask = make_order(2, "ABC", "SELL", 101.0, 2, 2)
+    buy = make_order(3, "ABC", "BUY", 101.0, 2, 3)
+
+    book.add_order(first_ask)
+    book.add_order(second_ask)
+
+    trades = book.match_order(buy)
+
+    assert len(trades) == 1
+    assert trades[0]["sell_order_id"] == 1
+    assert book.get_best_ask("ABC") is second_ask
+
+
+def test_best_bid_updates_after_best_price_is_fully_consumed():
+    book = OrderBook()
+
+    first_bid = make_order(1, "ABC", "BUY", 105.0, 2, 1)
+    second_bid = make_order(2, "ABC", "BUY", 104.0, 2, 2)
+    sell = make_order(3, "ABC", "SELL", 104.0, 2, 3)
+
+    book.add_order(first_bid)
+    book.add_order(second_bid)
+
+    trades = book.match_order(sell)
+
+    assert len(trades) == 1
+    assert trades[0]["buy_order_id"] == 1
+    assert book.get_best_bid("ABC") is second_bid
+
