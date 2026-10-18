@@ -18,3 +18,4 @@ htmlcov/
 # Generated databases
 data/*.db
 data/*.sqlite
+build/
