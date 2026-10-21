@@ -1,8 +1,10 @@
 
-"""Asyncio-based ChronosMatch market simulator with latency monitoring."""
+"""Asyncio-based ChronosMatch market simulator with live latency monitoring."""
 
 import asyncio
+import json
 import time
+from pathlib import Path
 
 from src.orders import Order
 from src.order_message import encode_order, decode_order
@@ -10,6 +12,9 @@ from src.order_message_bus import OrderMessageBus
 from src.order_book import OrderBook
 from src.latency import LatencyTracker
 from src.latency_monitor import LatencyMonitor
+
+
+SAMPLE_PATH = Path("data/latency_samples.jsonl")
 
 
 def generate_sample_orders():
@@ -22,6 +27,16 @@ def generate_sample_orders():
         Order(3, "XYZ", "BUY", 25.75, 20, current_time + 2),
         Order(4, "ABC", "BUY", 99.00, 4, current_time + 3),
     ]
+
+
+def publish_latency_sample(latency_ns):
+    """Append one real matching-engine latency sample for the dashboard."""
+    SAMPLE_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    with SAMPLE_PATH.open("a", encoding="utf-8") as sample_file:
+        sample_file.write(
+            json.dumps({"latency_ns": int(latency_ns)}) + "\n"
+        )
 
 
 async def produce_orders(bus, orders, producer_done):
@@ -41,7 +56,7 @@ async def produce_orders(bus, orders, producer_done):
 async def consume_orders(
     bus, order_book, latency_tracker, latency_monitor, producer_done
 ):
-    """Consume orders, execute matches, and record latency."""
+    """Consume orders, execute matches, and publish latency samples."""
     processed_orders = []
     all_trades = []
 
@@ -61,8 +76,8 @@ async def consume_orders(
         trades = order_book.match_order(order)
         elapsed_ns = latency_tracker.stop(start_time)
 
-        # Feed real matching-engine measurements into the monitor.
         latency_monitor.record(elapsed_ns)
+        publish_latency_sample(elapsed_ns)
 
         processed_orders.append(order)
         all_trades.extend(trades)
@@ -70,7 +85,7 @@ async def consume_orders(
         print(
             f"Order {order.order_id}: {order.side} "
             f"{original_quantity} {order.symbol} "
-            f"at ₹{order.price:.2f} "
+            f"at {order.price:.2f} "
             f"| Message size: {len(message)} bytes "
             f"| Matching latency: {elapsed_ns} ns"
         )
@@ -78,7 +93,7 @@ async def consume_orders(
         for trade in trades:
             print(
                 f"TRADE: {trade['symbol']} | "
-                f"Price: ₹{trade['price']:.2f} | "
+                f"Price: {trade['price']:.2f} | "
                 f"Quantity: {trade['quantity']} | "
                 f"Buy order: {trade['buy_order_id']} | "
                 f"Sell order: {trade['sell_order_id']}"
@@ -92,6 +107,10 @@ async def consume_orders(
 async def _run_simulation_async():
     """Run asynchronous order production and matching."""
     orders = generate_sample_orders()
+
+    SAMPLE_PATH.parent.mkdir(parents=True, exist_ok=True)
+    SAMPLE_PATH.write_text("", encoding="utf-8")
+
     bus = OrderMessageBus(capacity=len(orders))
     order_book = OrderBook()
     latency_tracker = LatencyTracker()
@@ -100,6 +119,7 @@ async def _run_simulation_async():
 
     try:
         print(f"Starting async simulation with {len(orders)} orders")
+        print(f"Publishing live latency samples to: {SAMPLE_PATH}")
 
         producer_task = asyncio.create_task(
             produce_orders(bus, orders, producer_done)
@@ -132,17 +152,18 @@ async def _run_simulation_async():
 
         print(f"\nTotal orders processed: {len(processed_orders)}")
         print(f"Total trades executed: {len(all_trades)}")
-        print("\nMatching-engine latency statistics (LatencyTracker):")
+
+        print("\nMatching-engine latency statistics:")
         print(f"Minimum: {stats['min_ns']} ns")
         print(f"Average: {stats['avg_ns']:.2f} ns")
         print(f"Maximum: {stats['max_ns']} ns")
 
-        print("\nLatency monitor statistics (real samples):")
+        print("\nLatency monitor statistics:")
         print(f"Samples: {monitor_stats['count']}")
-        print(f"Average: {monitor_stats['average_us']:.2f} µs")
-        print(f"P50: {monitor_stats['p50_us']:.2f} µs")
-        print(f"P95: {monitor_stats['p95_us']:.2f} µs")
-        print(f"P99: {monitor_stats['p99_us']:.2f} µs")
+        print(f"Average: {monitor_stats['average_us']:.2f} us")
+        print(f"P50: {monitor_stats['p50_us']:.2f} us")
+        print(f"P95: {monitor_stats['p95_us']:.2f} us")
+        print(f"P99: {monitor_stats['p99_us']:.2f} us")
 
         return processed_orders, all_trades
 

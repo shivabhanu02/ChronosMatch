@@ -1,11 +1,16 @@
 
-"""ChronosMatch terminal latency monitoring dashboard."""
+"""ChronosMatch terminal latency dashboard with live simulator data."""
 
 import argparse
 import curses
+import json
 import time
 from collections import deque
+from pathlib import Path
 from threading import Lock
+
+
+SAMPLE_PATH = Path("data/latency_samples.jsonl")
 
 
 class LatencyMonitor:
@@ -27,18 +32,20 @@ class LatencyMonitor:
         if latency_ns < 0:
             raise ValueError("Latency cannot be negative")
 
+        latency_ns = int(latency_ns)
+
         with self.lock:
-            self.history.append(int(latency_ns))
+            self.history.append(latency_ns)
             self.total_count += 1
-            self.total_latency_ns += int(latency_ns)
+            self.total_latency_ns += latency_ns
 
             if self.minimum_ns is None or latency_ns < self.minimum_ns:
-                self.minimum_ns = int(latency_ns)
+                self.minimum_ns = latency_ns
 
-            self.maximum_ns = max(self.maximum_ns, int(latency_ns))
+            self.maximum_ns = max(self.maximum_ns, latency_ns)
 
     def statistics(self):
-        """Return lifetime count and average, plus rolling percentiles."""
+        """Return lifetime totals and rolling-window percentiles."""
         with self.lock:
             samples = list(self.history)
             count = self.total_count
@@ -75,13 +82,15 @@ class LatencyMonitor:
 
 
 def draw_dashboard(stdscr, monitor, demo):
-    """Render the dashboard until the user presses Q."""
+    """Refresh the dashboard until Q is pressed."""
     import random
 
     curses.curs_set(0)
     stdscr.nodelay(True)
+
     started_at = time.perf_counter()
     next_demo_sample = started_at
+    file_position = 0
 
     while True:
         key = stdscr.getch()
@@ -90,9 +99,34 @@ def draw_dashboard(stdscr, monitor, demo):
 
         now = time.perf_counter()
 
-        if demo and now >= next_demo_sample:
-            monitor.record(random.randint(500, 5000))
-            next_demo_sample = now + 0.1
+        if demo:
+            if now >= next_demo_sample:
+                monitor.record(random.randint(500, 5000))
+                next_demo_sample = now + 0.1
+        elif SAMPLE_PATH.exists():
+            try:
+                current_size = SAMPLE_PATH.stat().st_size
+
+                # Handle the simulator starting a new run.
+                if current_size < file_position:
+                    file_position = 0
+                    monitor = LatencyMonitor()
+
+                with SAMPLE_PATH.open("r", encoding="utf-8") as sample_file:
+                    sample_file.seek(file_position)
+
+                    for line in sample_file:
+                        if not line.strip():
+                            continue
+
+                        data = json.loads(line)
+                        monitor.record(int(data["latency_ns"]))
+
+                    file_position = sample_file.tell()
+
+            except (OSError, ValueError, KeyError, json.JSONDecodeError):
+                # Retry on the next refresh if a file write is in progress.
+                pass
 
         stats = monitor.statistics()
         height, width = stdscr.getmaxyx()
@@ -106,7 +140,7 @@ def draw_dashboard(stdscr, monitor, demo):
         write_line(1, " CHRONOSMATCH | LATENCY MONITOR", curses.A_BOLD)
         write_line(2, "=" * min(width - 1, 60), curses.A_BOLD)
 
-        mode = "DEMO DATA" if demo else "WAITING FOR REAL SAMPLES"
+        mode = "DEMO DATA" if demo else "LIVE SIMULATOR DATA"
         write_line(4, f"Mode: {mode}")
         write_line(5, f"Elapsed: {now - started_at:.1f} seconds")
         write_line(6, f"Total samples: {stats['count']:,}")
