@@ -1,5 +1,5 @@
 
-"""Asyncio-based ChronosMatch market simulator."""
+"""Asyncio-based ChronosMatch market simulator with latency monitoring."""
 
 import asyncio
 import time
@@ -9,6 +9,7 @@ from src.order_message import encode_order, decode_order
 from src.order_message_bus import OrderMessageBus
 from src.order_book import OrderBook
 from src.latency import LatencyTracker
+from src.latency_monitor import LatencyMonitor
 
 
 def generate_sample_orders():
@@ -16,43 +17,15 @@ def generate_sample_orders():
     current_time = time.perf_counter_ns()
 
     return [
-        Order(
-            order_id=1,
-            symbol="ABC",
-            side="SELL",
-            price=100.00,
-            quantity=5,
-            timestamp_ns=current_time,
-        ),
-        Order(
-            order_id=2,
-            symbol="ABC",
-            side="BUY",
-            price=101.00,
-            quantity=3,
-            timestamp_ns=current_time + 1,
-        ),
-        Order(
-            order_id=3,
-            symbol="XYZ",
-            side="BUY",
-            price=25.75,
-            quantity=20,
-            timestamp_ns=current_time + 2,
-        ),
-        Order(
-            order_id=4,
-            symbol="ABC",
-            side="BUY",
-            price=99.00,
-            quantity=4,
-            timestamp_ns=current_time + 3,
-        ),
+        Order(1, "ABC", "SELL", 100.00, 5, current_time),
+        Order(2, "ABC", "BUY", 101.00, 3, current_time + 1),
+        Order(3, "XYZ", "BUY", 25.75, 20, current_time + 2),
+        Order(4, "ABC", "BUY", 99.00, 4, current_time + 3),
     ]
 
 
 async def produce_orders(bus, orders, producer_done):
-    """Produce binary order messages asynchronously."""
+    """Encode and enqueue orders asynchronously."""
     try:
         for order in orders:
             while bus.is_full():
@@ -60,15 +33,15 @@ async def produce_orders(bus, orders, producer_done):
 
             bus.write(encode_order(order))
             print(f"Produced order {order.order_id}")
-
-            # Yield control to the consumer.
             await asyncio.sleep(0)
     finally:
         producer_done.set()
 
 
-async def consume_orders(bus, order_book, latency_tracker, producer_done):
-    """Consume orders and execute trades asynchronously."""
+async def consume_orders(
+    bus, order_book, latency_tracker, latency_monitor, producer_done
+):
+    """Consume orders, execute matches, and record latency."""
     processed_orders = []
     all_trades = []
 
@@ -87,6 +60,9 @@ async def consume_orders(bus, order_book, latency_tracker, producer_done):
         start_time = latency_tracker.start()
         trades = order_book.match_order(order)
         elapsed_ns = latency_tracker.stop(start_time)
+
+        # Feed real matching-engine measurements into the monitor.
+        latency_monitor.record(elapsed_ns)
 
         processed_orders.append(order)
         all_trades.extend(trades)
@@ -114,12 +90,12 @@ async def consume_orders(bus, order_book, latency_tracker, producer_done):
 
 
 async def _run_simulation_async():
-    """Run asynchronous order production and consumption."""
+    """Run asynchronous order production and matching."""
     orders = generate_sample_orders()
-
     bus = OrderMessageBus(capacity=len(orders))
     order_book = OrderBook()
     latency_tracker = LatencyTracker()
+    latency_monitor = LatencyMonitor()
     producer_done = asyncio.Event()
 
     try:
@@ -133,6 +109,7 @@ async def _run_simulation_async():
                 bus,
                 order_book,
                 latency_tracker,
+                latency_monitor,
                 producer_done,
             )
         )
@@ -151,13 +128,21 @@ async def _run_simulation_async():
 
         processed_orders, all_trades = consumer_task.result()
         stats = latency_tracker.get_statistics()
+        monitor_stats = latency_monitor.statistics()
 
         print(f"\nTotal orders processed: {len(processed_orders)}")
         print(f"Total trades executed: {len(all_trades)}")
-        print("\nMatching-engine latency statistics:")
+        print("\nMatching-engine latency statistics (LatencyTracker):")
         print(f"Minimum: {stats['min_ns']} ns")
         print(f"Average: {stats['avg_ns']:.2f} ns")
         print(f"Maximum: {stats['max_ns']} ns")
+
+        print("\nLatency monitor statistics (real samples):")
+        print(f"Samples: {monitor_stats['count']}")
+        print(f"Average: {monitor_stats['average_us']:.2f} µs")
+        print(f"P50: {monitor_stats['p50_us']:.2f} µs")
+        print(f"P95: {monitor_stats['p95_us']:.2f} µs")
+        print(f"P99: {monitor_stats['p99_us']:.2f} µs")
 
         return processed_orders, all_trades
 
@@ -166,7 +151,7 @@ async def _run_simulation_async():
 
 
 def run_simulation():
-    """Run the simulator with a synchronous interface for existing callers."""
+    """Preserve the synchronous interface used by existing tests."""
     return asyncio.run(_run_simulation_async())
 
 
