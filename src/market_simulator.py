@@ -1,5 +1,5 @@
 
-"""Asyncio-based ChronosMatch market simulator with live latency monitoring."""
+"""Asyncio-based ChronosMatch simulator with latency and trade persistence."""
 
 import asyncio
 import json
@@ -12,6 +12,7 @@ from src.order_message_bus import OrderMessageBus
 from src.order_book import OrderBook
 from src.latency import LatencyTracker
 from src.latency_monitor import LatencyMonitor
+from src.trade_ledger import TradeLedger
 
 
 SAMPLE_PATH = Path("data/latency_samples.jsonl")
@@ -30,7 +31,7 @@ def generate_sample_orders():
 
 
 def publish_latency_sample(latency_ns):
-    """Append one real matching-engine latency sample for the dashboard."""
+    """Publish a real matching latency sample for the dashboard."""
     SAMPLE_PATH.parent.mkdir(parents=True, exist_ok=True)
 
     with SAMPLE_PATH.open("a", encoding="utf-8") as sample_file:
@@ -56,7 +57,7 @@ async def produce_orders(bus, orders, producer_done):
 async def consume_orders(
     bus, order_book, latency_tracker, latency_monitor, producer_done
 ):
-    """Consume orders, execute matches, and publish latency samples."""
+    """Consume orders, execute matches, and record latency."""
     processed_orders = []
     all_trades = []
 
@@ -105,7 +106,7 @@ async def consume_orders(
 
 
 async def _run_simulation_async():
-    """Run asynchronous order production and matching."""
+    """Run order production, matching, and persistent trade recording."""
     orders = generate_sample_orders()
 
     SAMPLE_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -119,7 +120,6 @@ async def _run_simulation_async():
 
     try:
         print(f"Starting async simulation with {len(orders)} orders")
-        print(f"Publishing live latency samples to: {SAMPLE_PATH}")
 
         producer_task = asyncio.create_task(
             produce_orders(bus, orders, producer_done)
@@ -147,11 +147,22 @@ async def _run_simulation_async():
             raise
 
         processed_orders, all_trades = consumer_task.result()
+
+        # Record wall-clock execution timestamps before persistence.
+        for trade in all_trades:
+            trade.setdefault("executed_at_ns", time.time_ns())
+
+        with TradeLedger() as ledger:
+            newly_saved = ledger.save_trades(all_trades)
+            total_saved = ledger.count_trades()
+
         stats = latency_tracker.get_statistics()
         monitor_stats = latency_monitor.statistics()
 
         print(f"\nTotal orders processed: {len(processed_orders)}")
-        print(f"Total trades executed: {len(all_trades)}")
+        print(f"Trades executed this run: {len(all_trades)}")
+        print(f"New trades saved to SQLite: {newly_saved}")
+        print(f"Total trades in SQLite ledger: {total_saved}")
 
         print("\nMatching-engine latency statistics:")
         print(f"Minimum: {stats['min_ns']} ns")
