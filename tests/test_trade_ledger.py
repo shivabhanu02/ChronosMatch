@@ -111,3 +111,25 @@ def test_batch_save_rolls_back_on_invalid_trade(ledger, sample_trade):
         ledger.save_trades([sample_trade, invalid_trade])
 
     assert ledger.count_trades() == 0
+
+def test_database_integrity_is_ok(ledger, sample_trade):
+    ledger.save_trade(sample_trade)
+
+    assert ledger.verify_integrity() == ["ok"]
+
+
+def test_file_database_uses_wal_and_full_synchronous(tmp_path):
+    database = tmp_path / "durability.db"
+
+    with TradeLedger(database) as ledger:
+        journal_mode = ledger.connection.execute(
+            "PRAGMA journal_mode"
+        ).fetchone()[0]
+        synchronous = ledger.connection.execute(
+            "PRAGMA synchronous"
+        ).fetchone()[0]
+
+        assert journal_mode.lower() == "wal"
+        assert synchronous == 2
+        assert ledger.verify_integrity() == ["ok"]
+
