@@ -3,11 +3,11 @@
 __pycache__/
 *.py[cod]
 
-# Virtual environment
+# Virtual environments
 .venv/
 venv/
 
-# Test files
+# Test files and coverage reports
 .pytest_cache/
 .coverage
 htmlcov/
@@ -15,7 +15,11 @@ htmlcov/
 # VS Code settings
 .vscode/
 
-# Generated databases
+# Generated runtime data
 data/*.db
 data/*.sqlite
+data/*.jsonl
+
+# Generated build files
 build/
+
