@@ -120,3 +120,27 @@ def load_order_book(path=DEFAULT_SNAPSHOT_PATH):
         restored.add_order(order)
 
     return restored
+
+def test_price_priority_survives_recovery(tmp_path):
+    path = tmp_path / "order_book.json"
+    original = OrderBook()
+
+    # The lower-priced sell order must be matched first.
+    original.add_order(make_order(1, "SELL", 105, 2, 10))
+    original.add_order(make_order(2, "SELL", 101, 3, 20))
+    original.add_order(make_order(3, "SELL", 103, 4, 30))
+
+    save_order_book(original, path)
+    restored = load_order_book(path)
+
+    incoming = make_order(4, "BUY", 105, 5, 40)
+    trades = restored.match_order(incoming)
+
+    assert [trade["sell_order_id"] for trade in trades] == [2, 3]
+    assert [trade["price"] for trade in trades] == [101, 103]
+    assert [trade["quantity"] for trade in trades] == [3, 2]
+
+    # The remaining quantity belongs to the next sell order.
+    best_ask = restored.get_best_ask("ABC")
+    assert best_ask.order_id == 3
+    assert best_ask.quantity == 2
