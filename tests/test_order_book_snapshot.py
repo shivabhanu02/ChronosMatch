@@ -163,3 +163,18 @@ def test_failed_snapshot_save_preserves_previous_snapshot(
     assert path.read_bytes() == previous_contents
     assert load_order_book(path).get_best_bid("ABC").order_id == 1
     assert list(tmp_path.glob(".order_book.json.*.tmp")) == []
+def test_snapshot_restores_multiple_symbols(tmp_path):
+    path = tmp_path / "multi_symbol.json"
+    original = OrderBook()
+
+    original.add_order(make_order(1, "BUY", 100, 5, 10, symbol="ABC"))
+    original.add_order(make_order(2, "SELL", 110, 3, 20, symbol="XYZ"))
+
+    assert save_order_book(original, path) == 2
+
+    restored = load_order_book(path)
+
+    assert restored.get_best_bid("ABC").order_id == 1
+    assert restored.get_best_ask("XYZ").order_id == 2
+    assert restored.get_best_bid("XYZ") is None
+    assert restored.get_best_ask("ABC") is None
