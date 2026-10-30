@@ -1,31 +1,48 @@
 
+from array import array
 from collections import defaultdict, deque
 
 from src.orders import Order
 
 try:
-    from src.matching_engine import compare_prices
+    from src.matching_engine import compare_prices, match_fifo_quantities
 
     CYTHON_ENABLED = True
+
 except ImportError:
     CYTHON_ENABLED = False
 
-    def compare_prices(
-        incoming_price: float,
-        resting_price: float,
-        is_buy: bool,
-    ) -> int:
-        """Python fallback for order price-crossing checks."""
+    def compare_prices(incoming_price, resting_price, is_buy):
+        """Python fallback for price-crossing checks."""
         if is_buy:
             return int(incoming_price >= resting_price)
         return int(incoming_price <= resting_price)
+
+    def match_fifo_quantities(incoming_quantity, resting_quantities):
+        """Python fallback for FIFO quantity matching."""
+        if incoming_quantity <= 0:
+            raise ValueError("Incoming quantity must be positive")
+
+        fills = []
+
+        for i in range(len(resting_quantities)):
+            available = resting_quantities[i]
+
+            if available <= 0:
+                raise ValueError("Resting quantities must be positive")
+
+            fill = min(incoming_quantity, available)
+            resting_quantities[i] -= fill
+            incoming_quantity -= fill
+            fills.append(fill)
+
+        return fills, incoming_quantity
 
 
 class OrderBook:
     """Limit order book with price-time priority per symbol."""
 
     def __init__(self):
-        # Structure: symbol -> price -> FIFO queue of orders
         self.buy_orders = defaultdict(lambda: defaultdict(deque))
         self.sell_orders = defaultdict(lambda: defaultdict(deque))
 
@@ -59,6 +76,7 @@ class OrderBook:
 
             for price in sorted(price_levels, reverse=True):
                 queue = price_levels[price]
+
                 if queue:
                     return queue[0]
 
@@ -73,6 +91,7 @@ class OrderBook:
 
             for price in sorted(price_levels):
                 queue = price_levels[price]
+
                 if queue:
                     return queue[0]
 
@@ -117,7 +136,6 @@ class OrderBook:
             else:
                 best_price = max(available_prices)
 
-            # Use Cython when available; otherwise use the Python fallback.
             if not compare_prices(
                 incoming_order.price,
                 best_price,
@@ -126,39 +144,57 @@ class OrderBook:
                 break
 
             resting_queue = symbol_levels[best_price]
-            resting_order = resting_queue[0]
+            resting_orders = list(resting_queue)
 
-            trade_quantity = min(
+            # Prepare a contiguous C-compatible quantity array.
+            quantities = array(
+                "q",
+                (order.quantity for order in resting_orders),
+            )
+
+            # Perform FIFO quantity matching in the Cython core.
+            fills, remaining_quantity = match_fifo_quantities(
                 incoming_order.quantity,
-                resting_order.quantity,
+                quantities,
             )
 
-            trades.append(
-                {
-                    "symbol": incoming_order.symbol,
-                    "price": resting_order.price,
-                    "quantity": trade_quantity,
-                    "buy_order_id": (
-                        incoming_order.order_id
-                        if is_buy
-                        else resting_order.order_id
-                    ),
-                    "sell_order_id": (
-                        resting_order.order_id
-                        if is_buy
-                        else incoming_order.order_id
-                    ),
-                }
-            )
+            # Update Python order objects and generate trade records.
+            for resting_order, fill, remaining in zip(
+                resting_orders,
+                fills,
+                quantities,
+            ):
+                resting_order.quantity = remaining
 
-            incoming_order.quantity -= trade_quantity
-            resting_order.quantity -= trade_quantity
+                if fill == 0:
+                    continue
 
-            if resting_order.quantity == 0:
+                trades.append(
+                    {
+                        "symbol": incoming_order.symbol,
+                        "price": resting_order.price,
+                        "quantity": fill,
+                        "buy_order_id": (
+                            incoming_order.order_id
+                            if is_buy
+                            else resting_order.order_id
+                        ),
+                        "sell_order_id": (
+                            resting_order.order_id
+                            if is_buy
+                            else incoming_order.order_id
+                        ),
+                    }
+                )
+
+            incoming_order.quantity = remaining_quantity
+
+            # Remove fully filled orders from the FIFO queue.
+            while resting_queue and resting_queue[0].quantity == 0:
                 resting_queue.popleft()
 
-                if not resting_queue:
-                    del symbol_levels[best_price]
+            if not resting_queue:
+                del symbol_levels[best_price]
 
         if not symbol_levels:
             opposite_book.pop(incoming_order.symbol, None)
