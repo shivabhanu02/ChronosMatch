@@ -60,11 +60,7 @@ class OrderBook:
         if not order.symbol:
             raise ValueError("Order symbol must not be empty")
 
-        if order.side == "BUY":
-            book = self.buy_orders
-        else:
-            book = self.sell_orders
-
+        book = self.buy_orders if order.side == "BUY" else self.sell_orders
         book[order.symbol][order.price].append(order)
 
     def get_best_bid(self, symbol=None):
@@ -112,11 +108,7 @@ class OrderBook:
             raise ValueError("Order symbol must not be empty")
 
         is_buy = incoming_order.side == "BUY"
-
-        if is_buy:
-            opposite_book = self.sell_orders
-        else:
-            opposite_book = self.buy_orders
+        opposite_book = self.sell_orders if is_buy else self.buy_orders
 
         symbol_levels = opposite_book.get(incoming_order.symbol, {})
         trades = []
@@ -131,36 +123,24 @@ class OrderBook:
             if not available_prices:
                 break
 
-            if is_buy:
-                best_price = min(available_prices)
-            else:
-                best_price = max(available_prices)
+            best_price = min(available_prices) if is_buy else max(available_prices)
 
-            if not compare_prices(
-                incoming_order.price,
-                best_price,
-                is_buy,
-            ):
+            if not compare_prices(incoming_order.price, best_price, is_buy):
                 break
 
             resting_queue = symbol_levels[best_price]
-            resting_orders = list(resting_queue)
 
-            # Prepare a contiguous C-compatible quantity array.
-            quantities = array(
-                "q",
-                (order.quantity for order in resting_orders),
-            )
+            # Build the C-compatible quantity array.
+            quantities = array("q", (order.quantity for order in resting_queue))
 
-            # Perform FIFO quantity matching in the Cython core.
             fills, remaining_quantity = match_fifo_quantities(
                 incoming_order.quantity,
                 quantities,
             )
 
-            # Update Python order objects and generate trade records.
+            # Update existing orders directly without copying the deque.
             for resting_order, fill, remaining in zip(
-                resting_orders,
+                resting_queue,
                 fills,
                 quantities,
             ):
@@ -189,7 +169,7 @@ class OrderBook:
 
             incoming_order.quantity = remaining_quantity
 
-            # Remove fully filled orders from the FIFO queue.
+            # Remove fully filled orders after iteration is complete.
             while resting_queue and resting_queue[0].quantity == 0:
                 resting_queue.popleft()
 
