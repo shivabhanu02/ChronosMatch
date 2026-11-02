@@ -1,5 +1,7 @@
 
-"""Asyncio-based ChronosMatch simulator with background trade persistence."""
+"""Asyncio-based ChronosMatch simulator with event-driven coordination
+and background trade persistence.
+"""
 
 import asyncio
 import json
@@ -17,7 +19,10 @@ from src.trade_ledger import TradeLedger
 
 
 SAMPLE_PATH = Path("data/latency_samples.jsonl")
+MARKET_STATE_PATH = Path("data/market_state.json")
+
 TRADE_BATCH_SIZE = 500
+MARKET_UPDATE_INTERVAL = 100
 
 
 def generate_sample_orders():
@@ -66,6 +71,47 @@ def publish_latency_samples(latencies):
             )
 
 
+def publish_market_state(order_book, processed_count, whale_event=None):
+    """Publish actual order-book prices and the latest whale event."""
+    symbols = sorted(
+        set(order_book.buy_orders) | set(order_book.sell_orders)
+    )
+
+    market_state = {
+        "updated_at_ns": time.time_ns(),
+        "processed_orders": processed_count,
+        "symbols": {},
+        "whale_event": whale_event,
+    }
+
+    for symbol in symbols:
+        bid = order_book.get_best_bid(symbol)
+        ask = order_book.get_best_ask(symbol)
+
+        bid_price = bid.price if bid else None
+        ask_price = ask.price if ask else None
+
+        spread = (
+            round(ask_price - bid_price, 8)
+            if bid_price is not None and ask_price is not None
+            else None
+        )
+
+        market_state["symbols"][symbol] = {
+            "best_bid": bid_price,
+            "best_ask": ask_price,
+            "spread": spread,
+        }
+
+    MARKET_STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    # Direct writing avoids Windows rename conflicts with dashboard readers.
+    MARKET_STATE_PATH.write_text(
+        json.dumps(market_state),
+        encoding="utf-8",
+    )
+
+
 def save_trade_batch(trades):
     """Save a trade batch using a thread-local SQLite connection."""
     with TradeLedger() as ledger:
@@ -104,20 +150,37 @@ async def persist_trades(trade_queue, batch_size=TRADE_BATCH_SIZE):
     return saved_count
 
 
-async def produce_orders(bus, orders, producer_done):
-    """Encode and enqueue orders asynchronously."""
+async def produce_orders(
+    bus,
+    orders,
+    producer_done,
+    data_available,
+    space_available,
+):
+    """Produce orders using event-driven buffer coordination."""
     produced = 0
 
     try:
         for order in orders:
             while bus.is_full():
-                await asyncio.sleep(0)
+                # Clear the event and recheck before waiting. This avoids
+                # missing a notification if the consumer has just read.
+                space_available.clear()
+
+                if bus.is_full():
+                    await space_available.wait()
 
             bus.write(encode_order(order))
             produced += 1
 
+            # Notify the consumer that an order is available.
+            data_available.set()
+
     finally:
         producer_done.set()
+
+        # Wake the consumer so it can finish after the final order.
+        data_available.set()
 
     return produced
 
@@ -129,22 +192,40 @@ async def consume_orders(
     latency_monitor,
     producer_done,
     trade_queue,
+    data_available,
+    space_available,
 ):
-    """Consume orders, execute matches, and queue trades for persistence."""
+    """Consume orders, execute matches, and publish market state."""
     processed_orders = []
     all_trades = []
     latency_samples = []
+    latest_whale_event = None
 
     while True:
         if bus.is_empty():
-            if producer_done.is_set():
-                break
+            # Clear and recheck before waiting to avoid a lost notification.
+            data_available.clear()
 
-            await asyncio.sleep(0)
+            if bus.is_empty():
+                if producer_done.is_set():
+                    break
+
+                await data_available.wait()
+
             continue
 
         message = bus.read()
+
+        # Notify producer that a buffer slot is now free.
+        space_available.set()
+
         order = decode_order(message)
+
+        # Preserve original details before matching changes remaining quantity.
+        original_quantity = order.quantity
+        original_order_id = order.order_id
+        original_side = order.side
+        original_symbol = order.symbol
 
         start_time = latency_tracker.start()
         trades = order_book.match_order(order)
@@ -152,7 +233,6 @@ async def consume_orders(
 
         latency_monitor.record(elapsed_ns)
         latency_samples.append(elapsed_ns)
-
         processed_orders.append(order)
 
         for trade in trades:
@@ -160,9 +240,49 @@ async def consume_orders(
 
         if trades:
             all_trades.extend(trades)
+
+            # Queue trade persistence without blocking on SQLite disk writes.
             await trade_queue.put(trades)
 
+            # Detect executions that consume multiple price levels.
+            execution_prices = {trade["price"] for trade in trades}
+
+            if len(execution_prices) > 1:
+                latest_whale_event = {
+                    "order_id": original_order_id,
+                    "symbol": original_symbol,
+                    "side": original_side,
+                    "quantity": original_quantity,
+                    "levels_cleared": len(execution_prices),
+                    "traded_quantity": sum(
+                        trade["quantity"] for trade in trades
+                    ),
+                    "execution_prices": sorted(execution_prices),
+                    "timestamp_ns": time.time_ns(),
+                }
+
+        processed_count = len(processed_orders)
+
+        # Publish dashboard data at a fixed interval instead of writing
+        # to disk for every multi-level execution.
+        if processed_count % MARKET_UPDATE_INTERVAL == 0:
+            publish_market_state(
+                order_book,
+                processed_count,
+                latest_whale_event,
+            )
+
+            latest_whale_event = None
+
+    # Write latency measurements in one batch.
     publish_latency_samples(latency_samples)
+
+    # Always publish the final order-book state.
+    publish_market_state(
+        order_book,
+        len(processed_orders),
+        latest_whale_event,
+    )
 
     return processed_orders, all_trades
 
@@ -194,10 +314,15 @@ async def _run_simulation_async(
     order_book = OrderBook()
     latency_tracker = LatencyTracker()
     latency_monitor = LatencyMonitor()
+
     producer_done = asyncio.Event()
+    data_available = asyncio.Event()
+    space_available = asyncio.Event()
 
     trade_queue = asyncio.Queue(maxsize=32)
     persistence_task = None
+    producer_task = None
+    consumer_task = None
 
     try:
         print(f"Starting simulation: {order_count:,} orders")
@@ -210,7 +335,13 @@ async def _run_simulation_async(
         )
 
         producer_task = asyncio.create_task(
-            produce_orders(bus, orders, producer_done)
+            produce_orders(
+                bus,
+                orders,
+                producer_done,
+                data_available,
+                space_available,
+            )
         )
 
         consumer_task = asyncio.create_task(
@@ -221,26 +352,32 @@ async def _run_simulation_async(
                 latency_monitor,
                 producer_done,
                 trade_queue,
+                data_available,
+                space_available,
             )
         )
 
         try:
             await asyncio.gather(producer_task, consumer_task)
 
-            # Wait until all queued trades are processed.
+            # Wait until all queued trades have been persisted.
             await trade_queue.join()
 
-            # Send the shutdown signal to the persistence worker.
+            # Stop the background persistence worker.
             await trade_queue.put(None)
             newly_saved = await persistence_task
 
         except Exception:
-            producer_task.cancel()
-            consumer_task.cancel()
+            for task in (producer_task, consumer_task):
+                if task is not None:
+                    task.cancel()
 
             await asyncio.gather(
-                producer_task,
-                consumer_task,
+                *(
+                    task
+                    for task in (producer_task, consumer_task)
+                    if task is not None
+                ),
                 return_exceptions=True,
             )
 
