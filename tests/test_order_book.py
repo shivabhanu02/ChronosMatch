@@ -3,6 +3,7 @@ import pytest
 
 from src.orders import Order
 from src.order_book import OrderBook
+from src.market_simulator import run_simulation
 
 
 def make_order(order_id, symbol, side, price, quantity, timestamp_ns):
@@ -148,6 +149,7 @@ def test_match_rejects_invalid_quantity():
     with pytest.raises(ValueError):
         book.match_order(order)
 
+
 def test_same_price_orders_for_different_symbols_stay_separate():
     book = OrderBook()
 
@@ -165,11 +167,8 @@ def test_same_price_orders_for_different_symbols_stay_separate():
     assert trades[0]["sell_order_id"] == 1
     assert trades[0]["quantity"] == 5
 
-    # The XYZ order must remain untouched.
     assert book.get_best_ask("XYZ") is xyz_sell
     assert xyz_sell.quantity == 5
-
-from src.market_simulator import run_simulation
 
 
 def test_market_simulator_executes_expected_trade():
@@ -185,6 +184,7 @@ def test_market_simulator_executes_expected_trade():
     assert trade["quantity"] == 3
     assert trade["buy_order_id"] == 2
     assert trade["sell_order_id"] == 1
+
 
 def test_best_bid_uses_highest_price_after_multiple_levels():
     book = OrderBook()
@@ -247,3 +247,41 @@ def test_best_bid_updates_after_best_price_is_fully_consumed():
     assert trades[0]["buy_order_id"] == 1
     assert book.get_best_bid("ABC") is second_bid
 
+
+def test_large_order_consumes_multiple_price_levels():
+    """A large incoming buy order should clear multiple ask levels."""
+    book = OrderBook()
+
+    first_ask = make_order(1, "ABC", "SELL", 100.0, 2, 1)
+    second_ask = make_order(2, "ABC", "SELL", 101.0, 3, 2)
+    third_ask = make_order(3, "ABC", "SELL", 102.0, 4, 3)
+
+    large_buy = make_order(4, "ABC", "BUY", 102.0, 8, 4)
+
+    book.add_order(first_ask)
+    book.add_order(second_ask)
+    book.add_order(third_ask)
+
+    trades = book.match_order(large_buy)
+
+    assert len(trades) == 3
+
+    assert [trade["price"] for trade in trades] == [
+        100.0,
+        101.0,
+        102.0,
+    ]
+
+    assert [trade["quantity"] for trade in trades] == [
+        2,
+        3,
+        3,
+    ]
+
+    assert len({trade["price"] for trade in trades}) == 3
+
+    assert sum(trade["quantity"] for trade in trades) == 8
+
+    assert large_buy.quantity == 0
+    assert book.get_best_ask("ABC") is third_ask
+    assert third_ask.quantity == 1
