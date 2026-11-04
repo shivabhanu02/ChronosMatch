@@ -244,16 +244,41 @@ async def consume_orders(
             # Queue trade persistence without blocking on SQLite disk writes.
             await trade_queue.put(trades)
 
-            # Detect executions that consume multiple price levels.
+            # Find the distinct execution prices.
             execution_prices = {trade["price"] for trade in trades}
 
+            # Detect an order that executes across multiple price levels.
             if len(execution_prices) > 1:
+
+                # A BUY consumes resting SELL orders.
+                # A SELL consumes resting BUY orders.
+                resting_side = (
+                    order_book.sell_orders
+                    if original_side == "BUY"
+                    else order_book.buy_orders
+                )
+
+                symbol_levels = resting_side.get(original_symbol, {})
+
+                # Count levels that are now completely empty.
+                levels_cleared = sum(
+                    1
+                    for price in execution_prices
+                    if not symbol_levels.get(price)
+                )
+
                 latest_whale_event = {
                     "order_id": original_order_id,
                     "symbol": original_symbol,
                     "side": original_side,
                     "quantity": original_quantity,
-                    "levels_cleared": len(execution_prices),
+
+                    # Number of distinct levels the order executed against.
+                    "levels_touched": len(execution_prices),
+
+                    # Number of those levels completely consumed.
+                    "levels_cleared": levels_cleared,
+
                     "traded_quantity": sum(
                         trade["quantity"] for trade in trades
                     ),
@@ -272,7 +297,8 @@ async def consume_orders(
                 latest_whale_event,
             )
 
-            latest_whale_event = None
+            # Keep the most recent whale event available for the final snapshot.
+            # Do not clear it after a periodic dashboard update.
 
     # Write latency measurements in one batch.
     publish_latency_samples(latency_samples)
