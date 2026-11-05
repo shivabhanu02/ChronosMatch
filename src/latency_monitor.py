@@ -1,16 +1,17 @@
 
-"""ChronosMatch terminal latency dashboard with live simulator data."""
+"""ChronosMatch responsive live trading engine dashboard."""
 
 import argparse
 import curses
 import json
+import random
 import time
 from collections import deque
 from pathlib import Path
 from threading import Lock
 
-
 SAMPLE_PATH = Path("data/latency_samples.jsonl")
+MARKET_STATE_PATH = Path("data/market_state.json")
 
 
 class LatencyMonitor:
@@ -28,7 +29,6 @@ class LatencyMonitor:
         self.lock = Lock()
 
     def record(self, latency_ns):
-        """Record a latency measurement in nanoseconds."""
         if latency_ns < 0:
             raise ValueError("Latency cannot be negative")
 
@@ -45,7 +45,6 @@ class LatencyMonitor:
             self.maximum_ns = max(self.maximum_ns, latency_ns)
 
     def statistics(self):
-        """Return lifetime totals and rolling-window percentiles."""
         with self.lock:
             samples = list(self.history)
             count = self.total_count
@@ -81,19 +80,34 @@ class LatencyMonitor:
         }
 
 
+def load_market_state():
+    """Load the latest simulator market snapshot."""
+    if not MARKET_STATE_PATH.exists():
+        return None
+
+    try:
+        with MARKET_STATE_PATH.open("r", encoding="utf-8") as file:
+            state = json.load(file)
+
+        return state if isinstance(state, dict) else None
+
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
 def draw_dashboard(stdscr, monitor, demo):
-    """Refresh the dashboard until Q is pressed."""
-    import random
+    """Render a responsive dashboard."""
 
     curses.curs_set(0)
     stdscr.nodelay(True)
 
     started_at = time.perf_counter()
+    sample_position = 0
     next_demo_sample = started_at
-    file_position = 0
 
     while True:
         key = stdscr.getch()
+
         if key in (ord("q"), ord("Q")):
             break
 
@@ -103,92 +117,189 @@ def draw_dashboard(stdscr, monitor, demo):
             if now >= next_demo_sample:
                 monitor.record(random.randint(500, 5000))
                 next_demo_sample = now + 0.1
+
         elif SAMPLE_PATH.exists():
             try:
                 current_size = SAMPLE_PATH.stat().st_size
 
-                # Handle the simulator starting a new run.
-                if current_size < file_position:
-                    file_position = 0
+                if current_size < sample_position:
+                    sample_position = 0
                     monitor = LatencyMonitor()
 
-                with SAMPLE_PATH.open("r", encoding="utf-8") as sample_file:
-                    sample_file.seek(file_position)
+                with SAMPLE_PATH.open("r", encoding="utf-8") as file:
+                    file.seek(sample_position)
 
-                    for line in sample_file:
+                    for line in file:
                         if not line.strip():
                             continue
 
                         data = json.loads(line)
                         monitor.record(int(data["latency_ns"]))
 
-                    file_position = sample_file.tell()
+                    sample_position = file.tell()
 
-            except (OSError, ValueError, KeyError, json.JSONDecodeError):
-                # Retry on the next refresh if a file write is in progress.
+            except (
+                OSError,
+                ValueError,
+                KeyError,
+                json.JSONDecodeError,
+            ):
                 pass
 
         stats = monitor.statistics()
+        market = load_market_state()
+
         height, width = stdscr.getmaxyx()
         stdscr.erase()
 
-        def write_line(y, message, attr=0):
+        def write(y, message, bold=False):
+            """Safely write text within the current terminal size."""
             if 0 <= y < height and width > 1:
-                stdscr.addnstr(y, 0, message, width - 1, attr)
+                try:
+                    attr = curses.A_BOLD if bold else curses.A_NORMAL
+                    stdscr.addnstr(y, 0, str(message), width - 1, attr)
+                except curses.error:
+                    pass
 
-        write_line(0, "=" * min(width - 1, 60), curses.A_BOLD)
-        write_line(1, " CHRONOSMATCH | LATENCY MONITOR", curses.A_BOLD)
-        write_line(2, "=" * min(width - 1, 60), curses.A_BOLD)
+        def section(y, heading):
+            write(y, "=" * min(width - 1, 65))
+            write(y + 1, heading, True)
 
-        mode = "DEMO DATA" if demo else "LIVE SIMULATOR DATA"
-        write_line(4, f"Mode: {mode}")
-        write_line(5, f"Elapsed: {now - started_at:.1f} seconds")
-        write_line(6, f"Total samples: {stats['count']:,}")
+        # Header
+        write(0, "=" * min(width - 1, 65), True)
+        write(1, " CHRONOSMATCH | LIVE TRADING MONITOR", True)
+        write(2, "=" * min(width - 1, 65), True)
 
-        write_line(8, "LATENCY STATISTICS (microseconds)", curses.A_BOLD)
-        write_line(9, f"Average: {stats['average_us']:.2f} us")
-        write_line(10, f"Minimum: {stats['minimum_us']:.2f} us")
-        write_line(11, f"Maximum: {stats['maximum_us']:.2f} us")
-        write_line(12, f"P50:     {stats['p50_us']:.2f} us")
-        write_line(13, f"P95:     {stats['p95_us']:.2f} us")
-        write_line(14, f"P99:     {stats['p99_us']:.2f} us")
+        write(3, f"Mode: {'DEMO' if demo else 'LIVE SIMULATOR DATA'}")
+        write(4, f"Elapsed: {now - started_at:.1f} seconds")
+        write(5, f"Latency samples: {stats['count']:,}")
 
-        write_line(16, "RECENT LATENCY HISTORY", curses.A_BOLD)
+        # Latency statistics
+        section(7, "LATENCY STATISTICS (microseconds)")
+        write(9, f"Average: {stats['average_us']:.2f} us")
+        write(10, f"Minimum: {stats['minimum_us']:.2f} us")
+        write(11, f"Maximum: {stats['maximum_us']:.2f} us")
+        write(12, f"P50: {stats['p50_us']:.2f} us")
+        write(13, f"P95: {stats['p95_us']:.2f} us")
+        write(14, f"P99: {stats['p99_us']:.2f} us")
+
+        # Recent history
+        section(16, "RECENT LATENCY HISTORY")
 
         with monitor.lock:
-            recent = list(monitor.history)[-max(0, min(10, height - 19)):]
+            recent = list(monitor.history)[-3:]
 
-        if recent:
-            scale = max(recent) or 1
-            graph_width = max(1, min(width - 15, 40))
+        for index, latency in enumerate(recent):
+            write(
+                18 + index,
+                f"Sample {index + 1}: {latency / 1000:.2f} us",
+            )
 
-            for index, latency in enumerate(recent):
-                bar_length = max(1, int(latency / scale * graph_width))
-                write_line(
-                    17 + index,
-                    f"{latency / 1000:8.2f} us | {'#' * bar_length}",
+        # Market state
+        section(22, "LIVE ORDER BOOK")
+
+        if market is None:
+            write(24, "Waiting for simulator market data...")
+        else:
+            write(
+                24,
+                f"Orders processed: {market.get('processed_orders', 0):,}",
+            )
+
+            symbols = market.get("symbols", {})
+
+            if not isinstance(symbols, dict) or not symbols:
+                write(25, "No open orders in the book.")
+            else:
+                write(25, "SYMBOL       BEST BID       BEST ASK       SPREAD", True)
+
+                for index, (symbol, book) in enumerate(
+                    sorted(symbols.items())
+                ):
+                    if not isinstance(book, dict):
+                        continue
+
+                    bid = book.get("best_bid")
+                    ask = book.get("best_ask")
+                    spread = book.get("spread")
+
+                    bid_text = f"{bid:.2f}" if bid is not None else "-"
+                    ask_text = f"{ask:.2f}" if ask is not None else "-"
+                    spread_text = (
+                        f"{spread:.2f}" if spread is not None else "-"
+                    )
+
+                    write(
+                        26 + index,
+                        f"{symbol:<12} {bid_text:<14} "
+                        f"{ask_text:<14} {spread_text}",
+                    )
+
+        # Whale alert: place after the order book rows.
+        symbols = market.get("symbols", {}) if market else {}
+        whale_y = max(29, 27 + len(symbols))
+
+        section(whale_y, "WHALE ORDER ALERT")
+
+        whale = market.get("whale_event") if market else None
+
+        if not whale:
+            write(
+                whale_y + 2,
+                "No multi-level whale execution reported yet.",
+            )
+        else:
+            write(
+                whale_y + 2,
+                f"Order #{whale.get('order_id', '-')} | "
+                f"{whale.get('side', '-')} "
+                f"{whale.get('symbol', '-')} | "
+                f"Quantity: {whale.get('quantity', '-')}",
+                True,
+            )
+
+            write(
+                whale_y + 3,
+                f"Traded: {whale.get('traded_quantity', '-')} | "
+                f"Levels touched: {whale.get('levels_touched', '-')} | "
+                f"Levels cleared: {whale.get('levels_cleared', '-')}",
+            )
+
+            prices = whale.get("execution_prices", [])
+
+            if prices:
+                write(
+                    whale_y + 4,
+                    "Execution prices: "
+                    + ", ".join(f"{price:.2f}" for price in prices),
                 )
 
-        write_line(height - 2, "Press Q to quit")
+        # Footer
+        write(height - 1, "Press Q to quit", True)
+
         stdscr.refresh()
-        time.sleep(0.05)
+        time.sleep(0.2)
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="ChronosMatch latency monitoring dashboard"
+        description="ChronosMatch live monitoring dashboard"
     )
+
     parser.add_argument(
         "--demo",
         action="store_true",
         help="Generate illustrative latency samples",
     )
+
     args = parser.parse_args()
 
-    monitor = LatencyMonitor()
-
     try:
-        curses.wrapper(draw_dashboard, monitor, args.demo)
+        curses.wrapper(
+            draw_dashboard,
+            LatencyMonitor(),
+            args.demo,
+        )
     except KeyboardInterrupt:
         pass
 
