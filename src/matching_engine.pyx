@@ -2,6 +2,7 @@
 # cython: language_level=3
 # cython: boundscheck=False
 # cython: wraparound=False
+# cython: initializedcheck=False
 
 cpdef int compare_prices(
     double incoming_price,
@@ -19,7 +20,7 @@ cpdef tuple match_fifo_quantities(
     long long[::1] resting_quantities
 ):
     """
-    Match an incoming quantity against resting orders in FIFO order.
+    Match quantities in FIFO order.
 
     Updates resting_quantities in place.
     Returns (fill_quantities, remaining_incoming_quantity).
@@ -33,13 +34,12 @@ cpdef tuple match_fifo_quantities(
         raise ValueError("Incoming quantity must be positive")
 
     for i in range(resting_quantities.shape[0]):
-        if resting_quantities[i] <= 0:
-            raise ValueError("Resting quantities must be positive")
-
-    for i in range(resting_quantities.shape[0]):
         available = resting_quantities[i]
 
-        if incoming_quantity <= 0:
+        if available <= 0:
+            raise ValueError("Resting quantities must be positive")
+
+        if incoming_quantity == 0:
             fills.append(0)
             continue
 

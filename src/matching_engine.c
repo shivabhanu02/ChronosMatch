@@ -3631,7 +3631,7 @@ static __pyx_mstatetype * const __pyx_mstate_global = &__pyx_mstate_global_stati
 #define __pyx_n_u_values __pyx_string_tab[101]
 #define __pyx_n_u_x __pyx_string_tab[102]
 #define __pyx_n_b_O __pyx_string_tab[103]
-#define __pyx_kp_b_iso88591_a_A_j_U_V1A_Qc_A_AQ_U_V1A_aq_S __pyx_string_tab[104]
+#define __pyx_kp_b_iso88591_a_A_j_U_V1A_aq_S_AQ_S_Rq_1_1_5 __pyx_string_tab[104]
 #define __pyx_kp_b_iso88591_q_uO3_9_5_s_5Q __pyx_string_tab[105]
 #define __pyx_int_0 __pyx_number_tab[0]
 #define __pyx_int_neg_1 __pyx_number_tab[1]
@@ -17899,8 +17899,8 @@ static PyObject *__pyx_unpickle_Enum__set_state(struct __pyx_MemviewEnum_obj *__
   return __pyx_r;
 }
 
-/* "src/matching_engine.pyx":6
- * # cython: wraparound=False
+/* "src/matching_engine.pyx":7
+ * # cython: initializedcheck=False
  * 
  * cpdef int compare_prices(             # <<<<<<<<<<<<<<
  *     double incoming_price,
@@ -17919,7 +17919,7 @@ static int __pyx_f_3src_15matching_engine_compare_prices(double __pyx_v_incoming
   int __pyx_t_1;
   int __pyx_t_2;
 
-  /* "src/matching_engine.pyx":12
+  /* "src/matching_engine.pyx":13
  * ):
  *     """Check whether an incoming order crosses the resting price."""
  *     if is_buy:             # <<<<<<<<<<<<<<
@@ -17928,7 +17928,7 @@ static int __pyx_f_3src_15matching_engine_compare_prices(double __pyx_v_incoming
 */
   if (__pyx_v_is_buy) {
 
-    /* "src/matching_engine.pyx":13
+    /* "src/matching_engine.pyx":14
  *     """Check whether an incoming order crosses the resting price."""
  *     if is_buy:
  *         return 1 if incoming_price >= resting_price else 0             # <<<<<<<<<<<<<<
@@ -17950,7 +17950,7 @@ static int __pyx_f_3src_15matching_engine_compare_prices(double __pyx_v_incoming
     }
     goto __pyx_L0;
 
-    /* "src/matching_engine.pyx":12
+    /* "src/matching_engine.pyx":13
  * ):
  *     """Check whether an incoming order crosses the resting price."""
  *     if is_buy:             # <<<<<<<<<<<<<<
@@ -17959,7 +17959,7 @@ static int __pyx_f_3src_15matching_engine_compare_prices(double __pyx_v_incoming
 */
   }
 
-  /* "src/matching_engine.pyx":14
+  /* "src/matching_engine.pyx":15
  *     if is_buy:
  *         return 1 if incoming_price >= resting_price else 0
  *     return 1 if incoming_price <= resting_price else 0             # <<<<<<<<<<<<<<
@@ -17981,8 +17981,8 @@ static int __pyx_f_3src_15matching_engine_compare_prices(double __pyx_v_incoming
   }
   goto __pyx_L0;
 
-  /* "src/matching_engine.pyx":6
- * # cython: wraparound=False
+  /* "src/matching_engine.pyx":7
+ * # cython: initializedcheck=False
  * 
  * cpdef int compare_prices(             # <<<<<<<<<<<<<<
  *     double incoming_price,
@@ -18037,46 +18037,46 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   {
     PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_incoming_price,&__pyx_mstate_global->__pyx_n_u_resting_price,&__pyx_mstate_global->__pyx_n_u_is_buy,0};
     const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
-    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 6, __pyx_L3_error)
+    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 7, __pyx_L3_error)
     if (__pyx_kwds_len > 0) {
       switch (__pyx_nargs) {
         case  3:
         values[2] = __Pyx_ArgRef_FASTCALL(__pyx_args, 2);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 6, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 7, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  2:
         values[1] = __Pyx_ArgRef_FASTCALL(__pyx_args, 1);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 6, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 7, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  1:
         values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 6, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 7, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  0: break;
         default: goto __pyx_L5_argtuple_error;
       }
       const Py_ssize_t kwd_pos_args = __pyx_nargs;
-      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "compare_prices", 0) < (0)) __PYX_ERR(0, 6, __pyx_L3_error)
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "compare_prices", 0) < (0)) __PYX_ERR(0, 7, __pyx_L3_error)
       for (Py_ssize_t i = __pyx_nargs; i < 3; i++) {
-        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("compare_prices", 1, 3, 3, i); __PYX_ERR(0, 6, __pyx_L3_error) }
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("compare_prices", 1, 3, 3, i); __PYX_ERR(0, 7, __pyx_L3_error) }
       }
     } else if (unlikely(__pyx_nargs != 3)) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 6, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 7, __pyx_L3_error)
       values[1] = __Pyx_ArgRef_FASTCALL(__pyx_args, 1);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 6, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 7, __pyx_L3_error)
       values[2] = __Pyx_ArgRef_FASTCALL(__pyx_args, 2);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 6, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[2])) __PYX_ERR(0, 7, __pyx_L3_error)
     }
-    __pyx_v_incoming_price = __Pyx_PyFloat_AsDouble(values[0]); if (unlikely((__pyx_v_incoming_price == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 7, __pyx_L3_error)
-    __pyx_v_resting_price = __Pyx_PyFloat_AsDouble(values[1]); if (unlikely((__pyx_v_resting_price == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 8, __pyx_L3_error)
-    __pyx_v_is_buy = __Pyx_PyObject_IsTrue(values[2]); if (unlikely((__pyx_v_is_buy == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 9, __pyx_L3_error)
+    __pyx_v_incoming_price = __Pyx_PyFloat_AsDouble(values[0]); if (unlikely((__pyx_v_incoming_price == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 8, __pyx_L3_error)
+    __pyx_v_resting_price = __Pyx_PyFloat_AsDouble(values[1]); if (unlikely((__pyx_v_resting_price == (double)-1) && PyErr_Occurred())) __PYX_ERR(0, 9, __pyx_L3_error)
+    __pyx_v_is_buy = __Pyx_PyObject_IsTrue(values[2]); if (unlikely((__pyx_v_is_buy == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 10, __pyx_L3_error)
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("compare_prices", 1, 3, 3, __pyx_nargs); __PYX_ERR(0, 6, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("compare_prices", 1, 3, 3, __pyx_nargs); __PYX_ERR(0, 7, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -18109,8 +18109,8 @@ static PyObject *__pyx_pf_3src_15matching_engine_compare_prices(CYTHON_UNUSED Py
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("compare_prices", 0);
-  __pyx_t_1 = __pyx_f_3src_15matching_engine_compare_prices(__pyx_v_incoming_price, __pyx_v_resting_price, __pyx_v_is_buy, 1); if (unlikely(__pyx_t_1 == ((int)-1) && PyErr_Occurred())) __PYX_ERR(0, 6, __pyx_L1_error)
-  __pyx_t_2 = __Pyx_PyLong_From_int(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 6, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_3src_15matching_engine_compare_prices(__pyx_v_incoming_price, __pyx_v_resting_price, __pyx_v_is_buy, 1); if (unlikely(__pyx_t_1 == ((int)-1) && PyErr_Occurred())) __PYX_ERR(0, 7, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyLong_From_int(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 7, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
 
   {
@@ -18135,7 +18135,7 @@ static PyObject *__pyx_pf_3src_15matching_engine_compare_prices(CYTHON_UNUSED Py
   return __pyx_r;
 }
 
-/* "src/matching_engine.pyx":17
+/* "src/matching_engine.pyx":18
  * 
  * 
  * cpdef tuple match_fifo_quantities(             # <<<<<<<<<<<<<<
@@ -18172,19 +18172,19 @@ static PyObject *__pyx_f_3src_15matching_engine_match_fifo_quantities(PY_LONG_LO
   __Pyx_RefNannySetupContext("match_fifo_quantities", 0);
 
 
-  /* "src/matching_engine.pyx":30
+  /* "src/matching_engine.pyx":31
  *     cdef long long available
  *     cdef long long fill
  *     cdef list fills = []             # <<<<<<<<<<<<<<
  * 
  *     if incoming_quantity <= 0:
 */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 30, __pyx_L1_error)
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 31, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_fills = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "src/matching_engine.pyx":32
+  /* "src/matching_engine.pyx":33
  *     cdef list fills = []
  * 
  *     if incoming_quantity <= 0:             # <<<<<<<<<<<<<<
@@ -18196,7 +18196,7 @@ static PyObject *__pyx_f_3src_15matching_engine_match_fifo_quantities(PY_LONG_LO
   if (unlikely(__pyx_t_2)) {
 
 
-    /* "src/matching_engine.pyx":33
+    /* "src/matching_engine.pyx":34
  * 
  *     if incoming_quantity <= 0:
  *         raise ValueError("Incoming quantity must be positive")             # <<<<<<<<<<<<<<
@@ -18209,14 +18209,14 @@ static PyObject *__pyx_f_3src_15matching_engine_match_fifo_quantities(PY_LONG_LO
       PyObject *__pyx_callargs[2] = {__pyx_t_3, __pyx_mstate_global->__pyx_kp_u_Incoming_quantity_must_be_positi};
       __pyx_t_1 = __Pyx_PyObject_FastCall((PyObject*)(((PyTypeObject*)PyExc_ValueError)), __pyx_callargs+__pyx_t_4, (2-__pyx_t_4) | (__pyx_t_4*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
       __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 33, __pyx_L1_error)
+      if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 34, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
     }
     __Pyx_Raise(__pyx_t_1, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __PYX_ERR(0, 33, __pyx_L1_error)
+    __PYX_ERR(0, 34, __pyx_L1_error)
 
-    /* "src/matching_engine.pyx":32
+    /* "src/matching_engine.pyx":33
  *     cdef list fills = []
  * 
  *     if incoming_quantity <= 0:             # <<<<<<<<<<<<<<
@@ -18225,12 +18225,12 @@ static PyObject *__pyx_f_3src_15matching_engine_match_fifo_quantities(PY_LONG_LO
 */
   }
 
-  /* "src/matching_engine.pyx":35
+  /* "src/matching_engine.pyx":36
  *         raise ValueError("Incoming quantity must be positive")
  * 
  *     for i in range(resting_quantities.shape[0]):             # <<<<<<<<<<<<<<
- *         if resting_quantities[i] <= 0:
- *             raise ValueError("Resting quantities must be positive")
+ *         available = resting_quantities[i]
+ * 
 */
 
   __pyx_t_5 = (__pyx_v_resting_quantities.shape[0]);
@@ -18239,25 +18239,34 @@ static PyObject *__pyx_f_3src_15matching_engine_match_fifo_quantities(PY_LONG_LO
   for (__pyx_t_7 = 0; __pyx_t_7 < __pyx_t_6; __pyx_t_7+=1) {
     __pyx_v_i = __pyx_t_7;
 
-    /* "src/matching_engine.pyx":36
+    /* "src/matching_engine.pyx":37
  * 
  *     for i in range(resting_quantities.shape[0]):
- *         if resting_quantities[i] <= 0:             # <<<<<<<<<<<<<<
+ *         available = resting_quantities[i]             # <<<<<<<<<<<<<<
+ * 
+ *         if available <= 0:
+*/
+    __pyx_t_8 = __pyx_v_i;
+    __pyx_v_available = (*((PY_LONG_LONG *) ( /* dim=0 */ ((char *) (((PY_LONG_LONG *) __pyx_v_resting_quantities.data) + __pyx_t_8)) )));
+
+    /* "src/matching_engine.pyx":39
+ *         available = resting_quantities[i]
+ * 
+ *         if available <= 0:             # <<<<<<<<<<<<<<
  *             raise ValueError("Resting quantities must be positive")
  * 
 */
-    __pyx_t_8 = __pyx_v_i;
-    __pyx_t_2 = ((*((PY_LONG_LONG *) ( /* dim=0 */ ((char *) (((PY_LONG_LONG *) __pyx_v_resting_quantities.data) + __pyx_t_8)) ))) <= 0);
+    __pyx_t_2 = (__pyx_v_available <= 0);
 
     if (unlikely(__pyx_t_2)) {
 
 
-      /* "src/matching_engine.pyx":37
- *     for i in range(resting_quantities.shape[0]):
- *         if resting_quantities[i] <= 0:
+      /* "src/matching_engine.pyx":40
+ * 
+ *         if available <= 0:
  *             raise ValueError("Resting quantities must be positive")             # <<<<<<<<<<<<<<
  * 
- *     for i in range(resting_quantities.shape[0]):
+ *         if incoming_quantity == 0:
 */
       __pyx_t_3 = NULL;
       __pyx_t_4 = 1;
@@ -18265,63 +18274,37 @@ static PyObject *__pyx_f_3src_15matching_engine_match_fifo_quantities(PY_LONG_LO
         PyObject *__pyx_callargs[2] = {__pyx_t_3, __pyx_mstate_global->__pyx_kp_u_Resting_quantities_must_be_posit};
         __pyx_t_1 = __Pyx_PyObject_FastCall((PyObject*)(((PyTypeObject*)PyExc_ValueError)), __pyx_callargs+__pyx_t_4, (2-__pyx_t_4) | (__pyx_t_4*__Pyx_PY_VECTORCALL_ARGUMENTS_OFFSET));
         __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-        if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 37, __pyx_L1_error)
+        if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 40, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
       }
       __Pyx_Raise(__pyx_t_1, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __PYX_ERR(0, 37, __pyx_L1_error)
+      __PYX_ERR(0, 40, __pyx_L1_error)
 
-      /* "src/matching_engine.pyx":36
+      /* "src/matching_engine.pyx":39
+ *         available = resting_quantities[i]
  * 
- *     for i in range(resting_quantities.shape[0]):
- *         if resting_quantities[i] <= 0:             # <<<<<<<<<<<<<<
+ *         if available <= 0:             # <<<<<<<<<<<<<<
  *             raise ValueError("Resting quantities must be positive")
  * 
 */
     }
-  }
-
-
-  /* "src/matching_engine.pyx":39
- *             raise ValueError("Resting quantities must be positive")
- * 
- *     for i in range(resting_quantities.shape[0]):             # <<<<<<<<<<<<<<
- *         available = resting_quantities[i]
- * 
-*/
-
-  __pyx_t_5 = (__pyx_v_resting_quantities.shape[0]);
-  __pyx_t_6 = __pyx_t_5;
-
-  for (__pyx_t_7 = 0; __pyx_t_7 < __pyx_t_6; __pyx_t_7+=1) {
-    __pyx_v_i = __pyx_t_7;
-
-    /* "src/matching_engine.pyx":40
- * 
- *     for i in range(resting_quantities.shape[0]):
- *         available = resting_quantities[i]             # <<<<<<<<<<<<<<
- * 
- *         if incoming_quantity <= 0:
-*/
-    __pyx_t_8 = __pyx_v_i;
-    __pyx_v_available = (*((PY_LONG_LONG *) ( /* dim=0 */ ((char *) (((PY_LONG_LONG *) __pyx_v_resting_quantities.data) + __pyx_t_8)) )));
 
     /* "src/matching_engine.pyx":42
- *         available = resting_quantities[i]
+ *             raise ValueError("Resting quantities must be positive")
  * 
- *         if incoming_quantity <= 0:             # <<<<<<<<<<<<<<
+ *         if incoming_quantity == 0:             # <<<<<<<<<<<<<<
  *             fills.append(0)
  *             continue
 */
-    __pyx_t_2 = (__pyx_v_incoming_quantity <= 0);
+    __pyx_t_2 = (__pyx_v_incoming_quantity == 0);
 
     if (__pyx_t_2) {
 
 
       /* "src/matching_engine.pyx":43
  * 
- *         if incoming_quantity <= 0:
+ *         if incoming_quantity == 0:
  *             fills.append(0)             # <<<<<<<<<<<<<<
  *             continue
  * 
@@ -18330,18 +18313,18 @@ static PyObject *__pyx_f_3src_15matching_engine_match_fifo_quantities(PY_LONG_LO
 
 
       /* "src/matching_engine.pyx":44
- *         if incoming_quantity <= 0:
+ *         if incoming_quantity == 0:
  *             fills.append(0)
  *             continue             # <<<<<<<<<<<<<<
  * 
  *         if incoming_quantity < available:
 */
-      goto __pyx_L7_continue;
+      goto __pyx_L4_continue;
 
       /* "src/matching_engine.pyx":42
- *         available = resting_quantities[i]
+ *             raise ValueError("Resting quantities must be positive")
  * 
- *         if incoming_quantity <= 0:             # <<<<<<<<<<<<<<
+ *         if incoming_quantity == 0:             # <<<<<<<<<<<<<<
  *             fills.append(0)
  *             continue
 */
@@ -18375,7 +18358,7 @@ static PyObject *__pyx_f_3src_15matching_engine_match_fifo_quantities(PY_LONG_LO
  *             fill = incoming_quantity
  *         else:
 */
-      goto __pyx_L10;
+      goto __pyx_L8;
     }
 
     /* "src/matching_engine.pyx":49
@@ -18388,7 +18371,7 @@ static PyObject *__pyx_f_3src_15matching_engine_match_fifo_quantities(PY_LONG_LO
     /*else*/ {
       __pyx_v_fill = __pyx_v_available;
     }
-    __pyx_L10:;
+    __pyx_L8:;
 
     /* "src/matching_engine.pyx":51
  *             fill = available
@@ -18421,7 +18404,7 @@ static PyObject *__pyx_f_3src_15matching_engine_match_fifo_quantities(PY_LONG_LO
     __pyx_t_9 = __Pyx_PyList_Append(__pyx_v_fills, __pyx_t_1); if (unlikely(__pyx_t_9 == ((int)-1))) __PYX_ERR(0, 53, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    __pyx_L7_continue:;
+    __pyx_L4_continue:;
   }
 
 
@@ -18451,7 +18434,7 @@ static PyObject *__pyx_f_3src_15matching_engine_match_fifo_quantities(PY_LONG_LO
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "src/matching_engine.pyx":17
+  /* "src/matching_engine.pyx":18
  * 
  * 
  * cpdef tuple match_fifo_quantities(             # <<<<<<<<<<<<<<
@@ -18484,7 +18467,7 @@ PyObject *const *__pyx_args, Py_ssize_t __pyx_nargs, PyObject *__pyx_kwds
 PyObject *__pyx_args, PyObject *__pyx_kwds
 #endif
 ); /*proto*/
-PyDoc_STRVAR(__pyx_doc_3src_15matching_engine_2match_fifo_quantities, "\n    Match an incoming quantity against resting orders in FIFO order.\n\n    Updates resting_quantities in place.\n    Returns (fill_quantities, remaining_incoming_quantity).\n    ");
+PyDoc_STRVAR(__pyx_doc_3src_15matching_engine_2match_fifo_quantities, "\n    Match quantities in FIFO order.\n\n    Updates resting_quantities in place.\n    Returns (fill_quantities, remaining_incoming_quantity).\n    ");
 static PyMethodDef __pyx_mdef_3src_15matching_engine_3match_fifo_quantities = {"match_fifo_quantities", (PyCFunction)(void(*)(void))(__Pyx_PyCFunction_FastCallWithKeywords)__pyx_pw_3src_15matching_engine_3match_fifo_quantities, __Pyx_METH_FASTCALL|METH_KEYWORDS, __pyx_doc_3src_15matching_engine_2match_fifo_quantities};
 static PyObject *__pyx_pw_3src_15matching_engine_3match_fifo_quantities(PyObject *__pyx_self, 
 #if CYTHON_VECTORCALL
@@ -18517,39 +18500,39 @@ PyObject *__pyx_args, PyObject *__pyx_kwds
   {
     PyObject ** const __pyx_pyargnames[] = {&__pyx_mstate_global->__pyx_n_u_incoming_quantity,&__pyx_mstate_global->__pyx_n_u_resting_quantities,0};
     const Py_ssize_t __pyx_kwds_len = (__pyx_kwds) ? __Pyx_NumKwargs_FASTCALL(__pyx_kwds) : 0;
-    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 17, __pyx_L3_error)
+    if (unlikely(__pyx_kwds_len < 0)) __PYX_ERR(0, 18, __pyx_L3_error)
     if (__pyx_kwds_len > 0) {
       switch (__pyx_nargs) {
         case  2:
         values[1] = __Pyx_ArgRef_FASTCALL(__pyx_args, 1);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 17, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 18, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  1:
         values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 17, __pyx_L3_error)
+        if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 18, __pyx_L3_error)
         CYTHON_FALLTHROUGH;
         case  0: break;
         default: goto __pyx_L5_argtuple_error;
       }
       const Py_ssize_t kwd_pos_args = __pyx_nargs;
-      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "match_fifo_quantities", 0) < (0)) __PYX_ERR(0, 17, __pyx_L3_error)
+      if (__Pyx_ParseKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values, kwd_pos_args, __pyx_kwds_len, "match_fifo_quantities", 0) < (0)) __PYX_ERR(0, 18, __pyx_L3_error)
       for (Py_ssize_t i = __pyx_nargs; i < 2; i++) {
-        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("match_fifo_quantities", 1, 2, 2, i); __PYX_ERR(0, 17, __pyx_L3_error) }
+        if (unlikely(!values[i])) { __Pyx_RaiseArgtupleInvalid("match_fifo_quantities", 1, 2, 2, i); __PYX_ERR(0, 18, __pyx_L3_error) }
       }
     } else if (unlikely(__pyx_nargs != 2)) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = __Pyx_ArgRef_FASTCALL(__pyx_args, 0);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 17, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[0])) __PYX_ERR(0, 18, __pyx_L3_error)
       values[1] = __Pyx_ArgRef_FASTCALL(__pyx_args, 1);
-      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 17, __pyx_L3_error)
+      if (!CYTHON_ASSUME_SAFE_MACROS && unlikely(!values[1])) __PYX_ERR(0, 18, __pyx_L3_error)
     }
-    __pyx_v_incoming_quantity = __Pyx_PyLong_As_PY_LONG_LONG(values[0]); if (unlikely((__pyx_v_incoming_quantity == (PY_LONG_LONG)-1) && PyErr_Occurred())) __PYX_ERR(0, 18, __pyx_L3_error)
-    __pyx_v_resting_quantities = __Pyx_PyObject_to_MemoryviewSlice_dc_PY_LONG_LONG(values[1], PyBUF_WRITABLE); if (unlikely(!__pyx_v_resting_quantities.memview)) __PYX_ERR(0, 19, __pyx_L3_error)
+    __pyx_v_incoming_quantity = __Pyx_PyLong_As_PY_LONG_LONG(values[0]); if (unlikely((__pyx_v_incoming_quantity == (PY_LONG_LONG)-1) && PyErr_Occurred())) __PYX_ERR(0, 19, __pyx_L3_error)
+    __pyx_v_resting_quantities = __Pyx_PyObject_to_MemoryviewSlice_dc_PY_LONG_LONG(values[1], PyBUF_WRITABLE); if (unlikely(!__pyx_v_resting_quantities.memview)) __PYX_ERR(0, 20, __pyx_L3_error)
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("match_fifo_quantities", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 17, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("match_fifo_quantities", 1, 2, 2, __pyx_nargs); __PYX_ERR(0, 18, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -18581,8 +18564,7 @@ static PyObject *__pyx_pf_3src_15matching_engine_2match_fifo_quantities(CYTHON_U
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("match_fifo_quantities", 0);
-  if (unlikely(!__pyx_v_resting_quantities.memview)) { __Pyx_RaiseUnboundLocalError("resting_quantities"); __PYX_ERR(0, 17, __pyx_L1_error) }
-  __pyx_t_1 = __pyx_f_3src_15matching_engine_match_fifo_quantities(__pyx_v_incoming_quantity, __pyx_v_resting_quantities, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 17, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_3src_15matching_engine_match_fifo_quantities(__pyx_v_incoming_quantity, __pyx_v_resting_quantities, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 18, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   {
     PyObject *__pyx_temp;
@@ -20745,34 +20727,34 @@ __Pyx_RefNannySetupContext("PyInit_matching_engine", 0);
   if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_pyx_unpickle_Enum, __pyx_t_4) < (0)) __PYX_ERR(1, 4, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "src/matching_engine.pyx":6
- * # cython: wraparound=False
+  /* "src/matching_engine.pyx":7
+ * # cython: initializedcheck=False
  * 
  * cpdef int compare_prices(             # <<<<<<<<<<<<<<
  *     double incoming_price,
  *     double resting_price,
 */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_3src_15matching_engine_1compare_prices, 0, __pyx_mstate_global->__pyx_n_u_compare_prices, NULL, __pyx_mstate_global->__pyx_n_u_src_matching_engine, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[0])); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 6, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_3src_15matching_engine_1compare_prices, 0, __pyx_mstate_global->__pyx_n_u_compare_prices, NULL, __pyx_mstate_global->__pyx_n_u_src_matching_engine, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[0])); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 7, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount(__pyx_t_4);
   #endif
-  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_compare_prices, __pyx_t_4) < (0)) __PYX_ERR(0, 6, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_compare_prices, __pyx_t_4) < (0)) __PYX_ERR(0, 7, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "src/matching_engine.pyx":17
+  /* "src/matching_engine.pyx":18
  * 
  * 
  * cpdef tuple match_fifo_quantities(             # <<<<<<<<<<<<<<
  *     long long incoming_quantity,
  *     long long[::1] resting_quantities
 */
-  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_3src_15matching_engine_3match_fifo_quantities, 0, __pyx_mstate_global->__pyx_n_u_match_fifo_quantities, NULL, __pyx_mstate_global->__pyx_n_u_src_matching_engine, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[1])); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 17, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_CyFunction_New(&__pyx_mdef_3src_15matching_engine_3match_fifo_quantities, 0, __pyx_mstate_global->__pyx_n_u_match_fifo_quantities, NULL, __pyx_mstate_global->__pyx_n_u_src_matching_engine, __pyx_mstate_global->__pyx_d, ((PyObject *)__pyx_mstate_global->__pyx_codeobj_tab[1])); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 18, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   #if CYTHON_COMPILING_IN_CPYTHON && PY_VERSION_HEX >= 0x030E0000
   PyUnstable_Object_EnableDeferredRefcount(__pyx_t_4);
   #endif
-  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_match_fifo_quantities, __pyx_t_4) < (0)) __PYX_ERR(0, 17, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_mstate_global->__pyx_d, __pyx_mstate_global->__pyx_n_u_match_fifo_quantities, __pyx_t_4) < (0)) __PYX_ERR(0, 18, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
   /* "src/matching_engine.pyx":2
@@ -20951,30 +20933,30 @@ static int __Pyx_InitConstants(__pyx_mstatetype *__pyx_mstate) {
   CYTHON_UNUSED_VAR(__pyx_mstate);
   {
     const struct { const unsigned int length: 8; } str_length_index[] = {{6},{8},{1},{2},{15},{23},{25},{32},{20},{22},{1},{1},{37},{34},{45},{22},{179},{35},{8},{15},{7},{6},{2},{9},{50},{23},{30},{37},{5},{8},{8},{15},{20},{12},{9},{17},{8},{8},{12},{10},{8},{10},{8},{7},{14},{11},{10},{19},{14},{12},{10},{17},{13},{12},{12},{19},{8},{13},{3},{15},{18},{4},{1},{18},{14},{5},{15},{6},{9},{5},{5},{6},{7},{2},{14},{17},{5},{6},{5},{8},{21},{7},{4},{4},{4},{3},{4},{3},{8},{13},{18},{10},{5},{4},{19},{5},{4},{4},{6},{6},{6},{6},{1}};
-    const struct { const unsigned int length: 8; } bytes_length_index[] = {{1},{173},{40}};
+    const struct { const unsigned int length: 8; } bytes_length_index[] = {{1},{150},{40}};
     #ifndef CYTHON_COMPRESS_STRINGS
       #define CYTHON_COMPRESS_STRINGS 90
     #endif
-    #if (CYTHON_COMPRESS_STRINGS) == 1 /* compression: zlib (939 bytes) */
-static const char cstring[] = "x\332}TKo\0337\020\266\201\030\021j\245\201\353\000i\003\024`\0024\002\212x\333\2401\372@\220Bp]@\207&~\240\351\221\340\222\263\022c.\271\342C\325\366\224\243\216:\356QG\037{\354\317\320QG\377\204\374\204\016w\365\252\021T\200vg\311\231of>~C\302<\371vLL\372\016\270\177\225\374D^\376\006\271\261\345[\t\177\022\223\221\227\334h/\373\301\004G\230\026DH\033\035o/K\275\332p\336J\001b\313\231\030\373\277\373\377][{\276\372\371\204im<a\316\311\276&\336\020\013L\034\031\255J\222\327E\216\260\310\236\346&\227\272O\206\201aI\036\367\202\363$\005R\030\047\275\034AO\217\230\222\202\344F\3003\002\343\002\3211Y\207wbe\235\314Xo\231\356<#}L\266rv\003V\000\026C\330X:\362\332x ~\200\\\235\224~`4\3015\001J\246`\231\007\254\047v\200\2506:irvzv\364\342\207\027u?\026\"\263\216\270\220r\205\255\200\213\264\246A*\217\350\276,\300%\244\227\221\322\004\242\001\353\302>\013\364\333\016\360\003\320\304\201\217\006\351\324\2540/\215\246\030\216\255w\226Db\2571\372W\246\034$\027\340\374\026-\022an\023\303\204\240\010\005\334(\025\303\215v\tK\271\220\216\245\n@\307g\237K\327XB\033\3549cAyB\251\005\0218PJD\250\223j\243\217\220\203\221d\nw\271\324\322S\352,\377&g\236\017\260\020\n\272/5$E9\0165^\214bJ\031\216\014\022f-+\211`\236%\037\331m\016#\262\331(\305%\335\313\223^\357T)Y8\351.a\030@s\210\232M6\362\245\364\254\034\343\377\027<\031\372\032\306\376\0022J\227\354a\351Xf\344wc\364\001\211\202<.\210\030\203\277,h\036\337\270\345VQ2/P2\321\312\231\324\365\333\210\240\352=\315\362\346\035\323S\212\315R>\000~\345B\336|-Q\242\031\317\276\261\202.$\277B\204S\275\362\033\371\310B\304\300\003T+\330\025\353k\213\327r\334Z\200q\374@\255\254Kq[\245\257\355M\234G\235\304\246\034\345\306\232\200\232\001\324\300\212z\232\206,C\221\273Rsi\222\265\213K\231\003\316\025\232\0249\300\001\342\2202~\205\263X0\013\264\300q\000\307M\320^\324}\"~s\307\340A\341\034\0026Z\317\016Xkl\246X\337\341\034\242V\226\323(\205\\\316u\003\265\376ZM9^\023\200\223\211\365\225\361\314\\\363\370\013j\271\321Lf\206n\224\217\267E\274*""\342\005\020Y\301\033&\307b\n\254\2670\205\205\276t8\272\266\031\230&\337\352c\203\201\324-\325_\2531\346By\047\267\344\215\354Z\244\030\n\347\r\376m\340\036\017\027\023\205\002\305\rx\267\004p\3437\357w?<\332\331{8e7w\356\316\357~Q\035V\335E\353\323\311\273j\267:\270\271\323\232\354M~\237>\236\037~5{{\375\374\032\267\366\347\373_V\347\025\237\035\316\272\213\366g\323\257\253nu\3761\307\007\363\007Ogl6\274iB.g\273\213\366\301\364a\304]\264\357-W/\252\341\242}8}~S?Z\217\252\307\325\361\354\223\353\047\021\000\323,Z\367&\177L\273SL\260?\371\036\341w>\257v?\264w\366Z\357\207\213\326\375I\230\276\231}7\177\372\343?\007\013t8\236\336\257\334\374\311\361\337\347\377\002wmnX";
-    PyObject *data = __Pyx_DecompressString(cstring, 939, 1);
+    #if (CYTHON_COMPRESS_STRINGS) == 1 /* compression: zlib (936 bytes) */
+static const char cstring[] = "x\332}TKo\333F\020\266\001\033\021j\247\201\353\000i\003\004\330\004h\004\0241\323\2401\332\006A\n\303u\001\035\232\370\201\246\307\305rwHmL\356R\373P\305\236r\324\221G\036u\364\261\307\376\014\035u\324O\310O\350,\251W\215\242\002D\016\347=\337~\263\2049\362\355\210\350\370\003p\367&zE^\377\n\2716\345{\t\177\020\235\220\327\\+\047S\257\275%L\t\"\244\t\216\267\325R-\r\326\031)@l8\023m\376\327\376o\335\312\363\315O\247L)\355\010\263V\246\2128M\0140q\244UV\222\274ir\210M\366\024\327\271T)\031x\206-9\264y\353H\014\244\320V:9\204\236\032\262L\n\222k\001\317\010\214\n\314\216\305\272\274\033:\353&\3328\303T\367\031I\261\330\322\331\366Y\001\330\014a#i\311[\355\200\270>buZ\272\276V\004u\0022\031\203a\016\260\2370\001f5\301I\221\363\263\363\243\227?\274l\3461\020\220\265\304\372\230g8\n\330\000k\354e\3460\273+\013\260\021\351%\244\324\236(\300\276p\316\002\3756\003\\\037\024\261\340\202@\272\r*\314I\255(\206\343\350\335\005\2208k\210\376\205e\026\242K\260n\003\026\211in\003\303\204\240\230\n\270\316\262\020\256\225\215X\314\205\264,\316\000Tx\246\\\332V\022J\343\314\t\363\231#\224\032\020\236\003\245D\370\246\250\322\352\0101\030J\226\241\225K%\035\245\326\360\3479s\274\217\215PP\251T\020\025\345\3107\371B\024\3132\315\021A\302\214a%\021\314\261\350?\254\355a\0044[\246\330\350\344\352\264\327;\3132YXi\257`\340Aq\010\234\215\326\364\245\364\274\034\341\377g<\031\372\026F\356\022\022J\027\350a\353\330f\300w-\244\200@A\036\024\"\304\340/\361\212\2077\232\3542J\346\005R&H9\223\252yk\341\263\306\246X\336\276CyJqX\312\373\300\257\255\317\333\257E\226 \206\263o%\257\n\311\2571\303\231Z\372\r]@!\344\300\003\314\226i\227\250\257$\336\320qC\001\243\360\201\\Y\265b7Z_\311\3538\207<\tCY\312\265\321\0369\003\310\201%\3644\366I\202$\267\245\342RG+\027\0333\013\234g(R\304\000\027\210C\314\3705\356b\301\014\320\002\327\001,\327^9\321\314\211\371\333;\006\017\n\367\020p\320fw\300\030m\222\214\245\026\367\020\271\262\330F)\344b\257\333T\253\257\345\226\3435\001\270\231\330_\031\316\314\266""\217?\241\241\033Md\242\351\232\371x[\204\253\"\\\000\001\025\274arl\246\300~\013]\030H\245\305\3255\355\302\264\365\226\037\353\034\010\335\202\375\r\033C-\244wt\213\336\210\256A\210\241\260N\343\337x\356\360p\261\220/\220\334\200w\213\007;z\367q\373\323\303\255\335\007\025\233\357\334\231\336\371\252>\254Of\235\317\307\037\352\355\372`\276\323\031\357\216\177\253\036O\017\277\236\274\277yq\203\246\373\323\373O\047l2\230w\366\306\257\252\253z{\266\377E\365M}R_\240f\272\367\250\276\232\240\352\240z\020\022\314\366\357.\264\227\365`\266\177X\275\2307\217\316\303\372q}<\371\354\346IH\371\250\276\230u\356\216\177\257N\252\213\371\316\336\370{,\270\365e\275\375i\177k\267\363q0\353\334\033\373\352\335\344\273\351\323\037\377>\230\241\303qu\257\266\323\047\307\177]\374\003\253Eeg";
+    PyObject *data = __Pyx_DecompressString(cstring, 936, 1);
     #define __Pyx_DecompressString_LZSS_UNUSED
     if (unlikely(!data)) __PYX_ERR(0, 2, __pyx_L1_error)
     const char* const bytes = __Pyx_PyBytes_AsString(data);
     #if !CYTHON_ASSUME_SAFE_MACROS
     if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 2, __pyx_L1_error) }
     #endif
-    #elif (CYTHON_COMPRESS_STRINGS) > 0 && (CYTHON_COMPRESS_STRINGS) <= 90 /* compression: lzss (1236 bytes) */
-static const char cstring[] = "\377 at 0x o\377bject>.:\377 <Memory\377View of \377<contigu\377ous and gdir%\001\007\rin\021\005\177strided\"\010o or \004\031><(\t\376A\006>?Canno\377t assign\377 to read\177-only m\240\002\375v\242\000Incomi\277ng qua\247\000t\376\031\000ust be \377positive\377Invalid \377mode, ex\271p\347\000\236\000\047c\047\226\001\047\377fortran\047\347, gj\000%\005sha\373pe\264\000 axis\377 Note th\376\251 Cython \376\021\000deliber\347ate\215\000\362\001cte\375r!\001n PEP-\267484\254\"re\326!s\277 subcl\310\000e\375s\323!builti\376\322\000ypes. I\377f you ne\344\266 \345\000p\360\000%\tthe\337n set\200\000e \375\047\221\"ation_\027typ\370\000\047\217D\351\000\242!\377False.Re\253st\214(iu\000m\212,a\367dd_\336 ecol\371l\373@N\000s.abc\377disablee\275n\002\001gcis\004\003d\377no defau\377lt __red\377uce__ du~\227 o non-\367@\357vial\033\000cin\377it__src/\337match\235@_e\377ngine.py\363xuU\002\315Aallo\375c\277  array? data.\013\020\207C\374\373a\330cs.ASCI\377IEllipsi\377sSequenc\365e\260\204\001.\265\204\007__Py\375x\001\000Dict_N\377extRef__l\267$\270\000__\214B__\001\005\177getitem\r\001yd0\001\027\000func\035\001\346\030\000st\350@)\001imp\274\260`3\001main\003\002owdulM\002nam\002\003\363ewT\001\352\000_che\017cksuT\000\n\001?\004\025\001\370\272@\276 \037\001unpicmk?\000En \005vt\200A\036\230\001qualO\005\356%\367&1c\212\204\002\277\001\212Dex\314\001\251`A_\203\005\265`\262\006\003\006.\007t\245`\376\200 is_coro\343ut\241@\201`\221E_bu\377fferasyn\357cio.\032\006sba_seccl\317@_\201 \377tracebac\377kcompare\377_pricesc\037ountd\343\002]\000\336\207\003\266\246@od\332`um\267\205\002e\377rrorflag\317sfor\251`\207\206\004id\341i\321\206\004E\003\005\006\336\206\005ind\273ex\262\000buy\260As\356\000\002ize\352b_fi\367fo_\212\207\004iesm\343em\247\207\001\375\206\001\235Andi\337mobjp\255\000po\177pregist\205\000\344\253\205\003\265\003r\006\004:\007set\364\367\204\004\226\207\002si\000src.\354\320\204\014\242`rtK\000pst=o\001\000ruct\332@\226 \377updateva\377luesxO\200""\001\377\360\032\000\005\027\220a\340\377\004\007\320\007\031\230\023\230\377A\330\010\016\210j\230\001\377\230\021\340\004\010\210\005\210\377U\220!\320\023%\240V\367\2501\250\030\000\013\320\013\035\377\230Q\230c\240\023\240A\377\330\014\022\220*\230A\230\375Q\025\021\024\320\024&\240a\357\240q\340\010.\002S\240\001\337\330\014\021\220\027T\001\330\014\375\r\017\004R\230q\330\014\023\367\2201\340\000\002\010\032\230!?\2305\240\n\250\"f\001d\000\377\330\010\r\210W\220A\220\356^\000\013\2107\205\000\000\030\230\377\001\360\014\000\005\010\200q\377\330\010\017\210u\220O\240\3773\320&9\270\021\330\004\377\013\2105\220\017\230s\320\017\"5\260Q";
-    PyObject *data = __Pyx_DecompressString_LZSS(cstring, 1236, 1611);
+    #elif (CYTHON_COMPRESS_STRINGS) > 0 && (CYTHON_COMPRESS_STRINGS) <= 90 /* compression: lzss (1233 bytes) */
+static const char cstring[] = "\377 at 0x o\377bject>.:\377 <Memory\377View of \377<contigu\377ous and gdir%\001\007\rin\021\005\177strided\"\010o or \004\031><(\t\376A\006>?Canno\377t assign\377 to read\177-only m\240\002\375v\242\000Incomi\277ng qua\247\000t\376\031\000ust be \377positive\377Invalid \377mode, ex\271p\347\000\236\000\047c\047\226\001\047\377fortran\047\347, gj\000%\005sha\373pe\264\000 axis\377 Note th\376\251 Cython \376\021\000deliber\347ate\215\000\362\001cte\375r!\001n PEP-\267484\254\"re\326!s\277 subcl\310\000e\375s\323!builti\376\322\000ypes. I\377f you ne\344\266 \345\000p\360\000%\tthe\337n set\200\000e \375\047\221\"ation_\027typ\370\000\047\217D\351\000\242!\377False.Re\253st\214(iu\000m\212,a\367dd_\336 ecol\371l\373@N\000s.abc\377disablee\275n\002\001gcis\004\003d\377no defau\377lt __red\377uce__ du~\227 o non-\367@\357vial\033\000cin\377it__src/\337match\235@_e\377ngine.py\363xuU\002\315Aallo\375c\277  array? data.\013\020\207C\374\373a\330cs.ASCI\377IEllipsi\377sSequenc\365e\260\204\001.\265\204\007__Py\375x\001\000Dict_N\377extRef__l\267$\270\000__\214B__\001\005\177getitem\r\001yd0\001\027\000func\035\001\346\030\000st\350@)\001imp\274\260`3\001main\003\002owdulM\002nam\002\003\363ewT\001\352\000_che\017cksuT\000\n\001?\004\025\001\370\272@\276 \037\001unpicmk?\000En \005vt\200A\036\230\001qualO\005\356%\367&1c\212\204\002\277\001\212Dex\314\001\251`A_\203\005\265`\262\006\003\006.\007t\245`\376\200 is_coro\343ut\241@\201`\221E_bu\377fferasyn\357cio.\032\006sba_seccl\317@_\201 \377tracebac\377kcompare\377_pricesc\037ountd\343\002]\000\336\207\003\266\246@od\332`um\267\205\002e\377rrorflag\317sfor\251`\207\206\004id\341i\321\206\004E\003\005\006\336\206\005ind\273ex\262\000buy\260As\356\000\002ize\352b_fi\367fo_\212\207\004iesm\343em\247\207\001\375\206\001\235Andi\337mobjp\255\000po\177pregist\205\000\344\253\205\003\265\003r\006\004:\007set\364\367\204\004\226\207\002si\000src.\354\320\204\014\242`rtK\000pst=o\001\000ruct\332@\226 \377updateva\377luesxO\200""\001\377\360\032\000\005\027\220a\340\377\004\007\320\007\031\230\023\230\377A\330\010\016\210j\230\001\377\230\021\340\004\010\210\005\210\377U\220!\320\023%\240V\367\2501\250\030\000\024\320\024&\377\240a\240q\340\010\013\210\377:\220S\230\001\330\014\022\277\220*\230A\230Q\017\000\320\337\013\035\230S\240\020\000\021\220\335\027=\001\330\014\r\017\004R\230\177q\330\014\023\2201\340\000\002\377\010\032\230!\2305\240\n\373\250\"O\001\035\230Q\330\010\377\r\210W\220A\220Q\340\357\004\013\2107n\000\000\030\230\377\001\360\014\000\005\010\200q\377\330\010\017\210u\220O\240\1773\320&9\270\021\330\036\000\3775\220\017\230s\320\"5\003\260Q";
+    PyObject *data = __Pyx_DecompressString_LZSS(cstring, 1233, 1588);
     #define __Pyx_DecompressString_UNUSED
     if (unlikely(!data)) __PYX_ERR(0, 2, __pyx_L1_error)
     const char* const bytes = __Pyx_PyBytes_AsString(data);
     #if !CYTHON_ASSUME_SAFE_MACROS
     if (likely(bytes)); else { Py_DECREF(data); __PYX_ERR(0, 2, __pyx_L1_error) }
     #endif
-    #else /* compression: none (1611 bytes) */
-static const char bytes[] = " at 0x object>.: <MemoryView of <contiguous and direct><contiguous and indirect><strided and direct or indirect><strided and direct><strided and indirect>>?Cannot assign to read-only memoryviewIncoming quantity must be positiveInvalid mode, expected \047c\047 or \047fortran\047, got Invalid shape in axis Note that Cython is deliberately stricter than PEP-484 and rejects subclasses of builtin types. If you need to pass subclasses then set the \047annotation_typing\047 directive to False.Resting quantities must be positiveadd_notecollections.abcdisableenablegcisenabledno default __reduce__ due to non-trivial __cinit__src/matching_engine.pyxunable to allocate array data.unable to allocate shape and strides.ASCIIEllipsisSequenceView.MemoryView__Pyx_PyDict_NextRef__annotate____class____class_getitem____dict____func____getstate____import____main____module____name____new____pyx_checksum__pyx_state__pyx_type__pyx_unpickle_Enum__pyx_vtable____qualname____reduce____reduce_cython____reduce_ex____set_name____setstate____setstate_cython____test___is_coroutineabcallocate_bufferasyncio.coroutinesbaseccline_in_tracebackcompare_pricescountdtype_is_objectencodeenumerateerrorflagsformatfortranidincoming_priceincoming_quantityindexis_buyitemsitemsizematch_fifo_quantitiesmemviewmodenamendimobjpackpopregisterresting_priceresting_quantitiessetdefaultshapesizesrc.matching_enginestartstepstopstructunpackupdatevaluesxO\200\001\360\032\000\005\027\220a\340\004\007\320\007\031\230\023\230A\330\010\016\210j\230\001\230\021\340\004\010\210\005\210U\220!\320\023%\240V\2501\250A\330\010\013\320\013\035\230Q\230c\240\023\240A\330\014\022\220*\230A\230Q\340\004\010\210\005\210U\220!\320\023%\240V\2501\250A\330\010\024\320\024&\240a\240q\340\010\013\320\013\035\230S\240\001\330\014\021\220\027\230\001\230\021\330\014\r\340\010\013\320\013\035\230R\230q\330\014\023\2201\340\014\023\2201\340\010\032\230!\2305\240\n\250\"\250A\330\010\035\230Q\330\010\r\210W\220A\220Q\340\004\013\2107\220!\320\000\030""\230\001\360\014\000\005\010\200q\330\010\017\210u\220O\2403\320&9\270\021\330\004\013\2105\220\017\230s\320\"5\260Q";
+    #else /* compression: none (1588 bytes) */
+static const char bytes[] = " at 0x object>.: <MemoryView of <contiguous and direct><contiguous and indirect><strided and direct or indirect><strided and direct><strided and indirect>>?Cannot assign to read-only memoryviewIncoming quantity must be positiveInvalid mode, expected \047c\047 or \047fortran\047, got Invalid shape in axis Note that Cython is deliberately stricter than PEP-484 and rejects subclasses of builtin types. If you need to pass subclasses then set the \047annotation_typing\047 directive to False.Resting quantities must be positiveadd_notecollections.abcdisableenablegcisenabledno default __reduce__ due to non-trivial __cinit__src/matching_engine.pyxunable to allocate array data.unable to allocate shape and strides.ASCIIEllipsisSequenceView.MemoryView__Pyx_PyDict_NextRef__annotate____class____class_getitem____dict____func____getstate____import____main____module____name____new____pyx_checksum__pyx_state__pyx_type__pyx_unpickle_Enum__pyx_vtable____qualname____reduce____reduce_cython____reduce_ex____set_name____setstate____setstate_cython____test___is_coroutineabcallocate_bufferasyncio.coroutinesbaseccline_in_tracebackcompare_pricescountdtype_is_objectencodeenumerateerrorflagsformatfortranidincoming_priceincoming_quantityindexis_buyitemsitemsizematch_fifo_quantitiesmemviewmodenamendimobjpackpopregisterresting_priceresting_quantitiessetdefaultshapesizesrc.matching_enginestartstepstopstructunpackupdatevaluesxO\200\001\360\032\000\005\027\220a\340\004\007\320\007\031\230\023\230A\330\010\016\210j\230\001\230\021\340\004\010\210\005\210U\220!\320\023%\240V\2501\250A\330\010\024\320\024&\240a\240q\340\010\013\210:\220S\230\001\330\014\022\220*\230A\230Q\340\010\013\320\013\035\230S\240\001\330\014\021\220\027\230\001\230\021\330\014\r\340\010\013\320\013\035\230R\230q\330\014\023\2201\340\014\023\2201\340\010\032\230!\2305\240\n\250\"\250A\330\010\035\230Q\330\010\r\210W\220A\220Q\340\004\013\2107\220!\320\000\030\230\001\360\014\000\005\010\200q\330\010\017\210u\220O\2403\320&9\270""\021\330\004\013\2105\220\017\230s\320\"5\260Q";
     PyObject *data = NULL;
     #define __Pyx_DecompressString_UNUSED
     #define __Pyx_DecompressString_LZSS_UNUSED
@@ -21098,14 +21080,14 @@ static int __Pyx_CreateCodeObjects(__pyx_mstatetype *__pyx_mstate) {
   PyObject* tuple_dedup_map = PyDict_New();
   if (unlikely(!tuple_dedup_map)) return -1;
   {
-    const __Pyx_PyCode_New_function_description descr = {3, 0, 0, 3, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 6};
+    const __Pyx_PyCode_New_function_description descr = {3, 0, 0, 3, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 7};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_incoming_price, __pyx_mstate->__pyx_n_u_resting_price, __pyx_mstate->__pyx_n_u_is_buy};
     __pyx_mstate_global->__pyx_codeobj_tab[0] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_src_matching_engine_pyx, __pyx_mstate->__pyx_n_u_compare_prices, __pyx_mstate->__pyx_kp_b_iso88591_q_uO3_9_5_s_5Q, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[0])) goto bad;
   }
   {
-    const __Pyx_PyCode_New_function_description descr = {2, 0, 0, 2, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 17};
+    const __Pyx_PyCode_New_function_description descr = {2, 0, 0, 2, (unsigned int)(CO_OPTIMIZED|CO_NEWLOCALS), 18};
     PyObject* const varnames[] = {__pyx_mstate->__pyx_n_u_incoming_quantity, __pyx_mstate->__pyx_n_u_resting_quantities};
-    __pyx_mstate_global->__pyx_codeobj_tab[1] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_src_matching_engine_pyx, __pyx_mstate->__pyx_n_u_match_fifo_quantities, __pyx_mstate->__pyx_kp_b_iso88591_a_A_j_U_V1A_Qc_A_AQ_U_V1A_aq_S, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[1])) goto bad;
+    __pyx_mstate_global->__pyx_codeobj_tab[1] = __Pyx_PyCode_New(descr, varnames, __pyx_mstate->__pyx_kp_u_src_matching_engine_pyx, __pyx_mstate->__pyx_n_u_match_fifo_quantities, __pyx_mstate->__pyx_kp_b_iso88591_a_A_j_U_V1A_aq_S_AQ_S_Rq_1_1_5, tuple_dedup_map); if (unlikely(!__pyx_mstate_global->__pyx_codeobj_tab[1])) goto bad;
   }
   Py_DECREF(tuple_dedup_map);
   return 0;
