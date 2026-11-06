@@ -28,37 +28,88 @@ class OrderMessageBus:
         return self.size == self.capacity
 
     def write(self, message):
+        self.write_many([message])
+
+    def write_many(self, messages):
         if self.closed:
             raise ValueError("Message bus is closed")
 
-        if len(message) != self.slot_size:
-            raise ValueError(
-                f"Message must be exactly {self.slot_size} bytes"
-            )
+        messages = list(messages)
 
-        if self.is_full():
-            raise BufferError("Message bus is full")
+        if not messages:
+            return 0
 
-        offset = self.write_index * self.slot_size
-        self.memory[offset:offset + self.slot_size] = message
+        for message in messages:
+            if len(message) != self.slot_size:
+                raise ValueError(
+                    f"Message must be exactly {self.slot_size} bytes"
+                )
 
-        self.write_index = (self.write_index + 1) % self.capacity
-        self.size += 1
+        if len(messages) > self.capacity - self.size:
+            raise BufferError("Message bus does not have enough free space")
+
+        first_count = min(len(messages), self.capacity - self.write_index)
+
+        first_data = b"".join(messages[:first_count])
+        first_offset = self.write_index * self.slot_size
+        self.memory[first_offset:first_offset + len(first_data)] = first_data
+
+        remaining = messages[first_count:]
+
+        if remaining:
+            second_data = b"".join(remaining)
+            self.memory[:len(second_data)] = second_data
+
+        self.write_index = (self.write_index + len(messages)) % self.capacity
+        self.size += len(messages)
+
+        return len(messages)
 
     def read(self):
+        messages = self.read_many(1)
+        return messages[0]
+
+    def read_many(self, max_items):
         if self.closed:
             raise ValueError("Message bus is closed")
+
+        if not isinstance(max_items, int) or isinstance(max_items, bool):
+            raise TypeError("max_items must be an integer")
+
+        if max_items <= 0:
+            raise ValueError("max_items must be greater than zero")
 
         if self.is_empty():
             raise BufferError("Message bus is empty")
 
-        offset = self.read_index * self.slot_size
-        message = self.memory[offset:offset + self.slot_size]
+        count = min(max_items, self.size)
+        first_count = min(count, self.capacity - self.read_index)
 
-        self.read_index = (self.read_index + 1) % self.capacity
-        self.size -= 1
+        first_offset = self.read_index * self.slot_size
+        first_end = first_offset + first_count * self.slot_size
 
-        return message
+        result = [
+            self.memory[
+                first_offset + i * self.slot_size:
+                first_offset + (i + 1) * self.slot_size
+            ]
+            for i in range(first_count)
+        ]
+
+        remaining = count - first_count
+
+        if remaining:
+            result.extend(
+                self.memory[
+                    i * self.slot_size:(i + 1) * self.slot_size
+                ]
+                for i in range(remaining)
+            )
+
+        self.read_index = (self.read_index + count) % self.capacity
+        self.size -= count
+
+        return result
 
     def close(self):
         if not self.closed:

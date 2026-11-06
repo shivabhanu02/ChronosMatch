@@ -1,7 +1,5 @@
 
-"""Asyncio-based ChronosMatch simulator with event-driven coordination
-and background trade persistence.
-"""
+"""Asyncio-based ChronosMatch simulator with batched message processing."""
 
 import asyncio
 import json
@@ -23,6 +21,7 @@ MARKET_STATE_PATH = Path("data/market_state.json")
 
 TRADE_BATCH_SIZE = 500
 MARKET_UPDATE_INTERVAL = 100
+MESSAGE_BATCH_SIZE = 64
 
 
 def generate_sample_orders():
@@ -65,10 +64,10 @@ def publish_latency_samples(latencies):
     SAMPLE_PATH.parent.mkdir(parents=True, exist_ok=True)
 
     with SAMPLE_PATH.open("a", encoding="utf-8") as sample_file:
-        for latency_ns in latencies:
-            sample_file.write(
-                json.dumps({"latency_ns": int(latency_ns)}) + "\n"
-            )
+        sample_file.writelines(
+            json.dumps({"latency_ns": int(value)}) + "\n"
+            for value in latencies
+        )
 
 
 def publish_market_state(order_book, processed_count, whale_event=None):
@@ -104,8 +103,6 @@ def publish_market_state(order_book, processed_count, whale_event=None):
         }
 
     MARKET_STATE_PATH.parent.mkdir(parents=True, exist_ok=True)
-
-    # Direct writing avoids Windows rename conflicts with dashboard readers.
     MARKET_STATE_PATH.write_text(
         json.dumps(market_state),
         encoding="utf-8",
@@ -157,29 +154,40 @@ async def produce_orders(
     data_available,
     space_available,
 ):
-    """Produce orders using event-driven buffer coordination."""
+    """Encode and enqueue orders in batches."""
     produced = 0
+    order_iterator = iter(orders)
+    finished = False
 
     try:
-        for order in orders:
+        while not finished:
             while bus.is_full():
-                # Clear the event and recheck before waiting. This avoids
-                # missing a notification if the consumer has just read.
                 space_available.clear()
 
                 if bus.is_full():
                     await space_available.wait()
 
-            bus.write(encode_order(order))
-            produced += 1
+            available_slots = bus.capacity - bus.size
+            batch_limit = min(MESSAGE_BATCH_SIZE, available_slots)
 
-            # Notify the consumer that an order is available.
-            data_available.set()
+            messages = []
+
+            for _ in range(batch_limit):
+                try:
+                    order = next(order_iterator)
+                except StopIteration:
+                    finished = True
+                    break
+
+                messages.append(encode_order(order))
+
+            if messages:
+                bus.write_many(messages)
+                produced += len(messages)
+                data_available.set()
 
     finally:
         producer_done.set()
-
-        # Wake the consumer so it can finish after the final order.
         data_available.set()
 
     return produced
@@ -195,7 +203,7 @@ async def consume_orders(
     data_available,
     space_available,
 ):
-    """Consume orders, execute matches, and publish market state."""
+    """Read messages in batches and match orders in FIFO order."""
     processed_orders = []
     all_trades = []
     latency_samples = []
@@ -203,7 +211,6 @@ async def consume_orders(
 
     while True:
         if bus.is_empty():
-            # Clear and recheck before waiting to avoid a lost notification.
             data_available.clear()
 
             if bus.is_empty():
@@ -214,96 +221,81 @@ async def consume_orders(
 
             continue
 
-        message = bus.read()
+        messages = bus.read_many(
+            min(MESSAGE_BATCH_SIZE, bus.size)
+        )
 
-        # Notify producer that a buffer slot is now free.
         space_available.set()
 
-        order = decode_order(message)
+        for message in messages:
+            order = decode_order(message)
 
-        # Preserve original details before matching changes remaining quantity.
-        original_quantity = order.quantity
-        original_order_id = order.order_id
-        original_side = order.side
-        original_symbol = order.symbol
+            original_quantity = order.quantity
+            original_order_id = order.order_id
+            original_side = order.side
+            original_symbol = order.symbol
 
-        start_time = latency_tracker.start()
-        trades = order_book.match_order(order)
-        elapsed_ns = latency_tracker.stop(start_time)
+            start_time = latency_tracker.start()
+            trades = order_book.match_order(order)
+            elapsed_ns = latency_tracker.stop(start_time)
 
-        latency_monitor.record(elapsed_ns)
-        latency_samples.append(elapsed_ns)
-        processed_orders.append(order)
+            latency_monitor.record(elapsed_ns)
+            latency_samples.append(elapsed_ns)
+            processed_orders.append(order)
 
-        for trade in trades:
-            trade.setdefault("executed_at_ns", time.time_ns())
+            for trade in trades:
+                trade.setdefault("executed_at_ns", time.time_ns())
 
-        if trades:
-            all_trades.extend(trades)
+            if trades:
+                all_trades.extend(trades)
+                await trade_queue.put(trades)
 
-            # Queue trade persistence without blocking on SQLite disk writes.
-            await trade_queue.put(trades)
-
-            # Find the distinct execution prices.
-            execution_prices = {trade["price"] for trade in trades}
-
-            # Detect an order that executes across multiple price levels.
-            if len(execution_prices) > 1:
-
-                # A BUY consumes resting SELL orders.
-                # A SELL consumes resting BUY orders.
-                resting_side = (
-                    order_book.sell_orders
-                    if original_side == "BUY"
-                    else order_book.buy_orders
-                )
-
-                symbol_levels = resting_side.get(original_symbol, {})
-
-                # Count levels that are now completely empty.
-                levels_cleared = sum(
-                    1
-                    for price in execution_prices
-                    if not symbol_levels.get(price)
-                )
-
-                latest_whale_event = {
-                    "order_id": original_order_id,
-                    "symbol": original_symbol,
-                    "side": original_side,
-                    "quantity": original_quantity,
-
-                    # Number of distinct levels the order executed against.
-                    "levels_touched": len(execution_prices),
-
-                    # Number of those levels completely consumed.
-                    "levels_cleared": levels_cleared,
-
-                    "traded_quantity": sum(
-                        trade["quantity"] for trade in trades
-                    ),
-                    "execution_prices": sorted(execution_prices),
-                    "timestamp_ns": time.time_ns(),
+                execution_prices = {
+                    trade["price"] for trade in trades
                 }
 
-        processed_count = len(processed_orders)
+                if len(execution_prices) > 1:
+                    resting_side = (
+                        order_book.sell_orders
+                        if original_side == "BUY"
+                        else order_book.buy_orders
+                    )
 
-        # Publish dashboard data at a fixed interval instead of writing
-        # to disk for every multi-level execution.
-        if processed_count % MARKET_UPDATE_INTERVAL == 0:
-            publish_market_state(
-                order_book,
-                processed_count,
-                latest_whale_event,
-            )
+                    symbol_levels = resting_side.get(
+                        original_symbol, {}
+                    )
 
-            # Keep the most recent whale event available for the final snapshot.
-            # Do not clear it after a periodic dashboard update.
+                    levels_cleared = sum(
+                        1
+                        for price in execution_prices
+                        if not symbol_levels.get(price)
+                    )
 
-    # Write latency measurements in one batch.
+                    latest_whale_event = {
+                        "order_id": original_order_id,
+                        "symbol": original_symbol,
+                        "side": original_side,
+                        "quantity": original_quantity,
+                        "levels_touched": len(execution_prices),
+                        "levels_cleared": levels_cleared,
+                        "traded_quantity": sum(
+                            trade["quantity"] for trade in trades
+                        ),
+                        "execution_prices": sorted(execution_prices),
+                        "timestamp_ns": time.time_ns(),
+                    }
+
+            processed_count = len(processed_orders)
+
+            if processed_count % MARKET_UPDATE_INTERVAL == 0:
+                publish_market_state(
+                    order_book,
+                    processed_count,
+                    latest_whale_event,
+                )
+
     publish_latency_samples(latency_samples)
 
-    # Always publish the final order-book state.
     publish_market_state(
         order_book,
         len(processed_orders),
@@ -353,6 +345,7 @@ async def _run_simulation_async(
     try:
         print(f"Starting simulation: {order_count:,} orders")
         print(f"Message bus capacity: {bus_capacity:,}")
+        print(f"Message batch size: {MESSAGE_BATCH_SIZE}")
 
         simulation_start = time.perf_counter()
 
@@ -386,10 +379,7 @@ async def _run_simulation_async(
         try:
             await asyncio.gather(producer_task, consumer_task)
 
-            # Wait until all queued trades have been persisted.
             await trade_queue.join()
-
-            # Stop the background persistence worker.
             await trade_queue.put(None)
             newly_saved = await persistence_task
 

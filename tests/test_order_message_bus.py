@@ -21,8 +21,7 @@ def make_message(order_id):
 def test_write_and_read_message():
     bus = OrderMessageBus(2)
     try:
-        message = make_message(1)
-        bus.write(message)
+        bus.write(make_message(1))
 
         assert decode_order(bus.read()).order_id == 1
         assert bus.is_empty()
@@ -85,3 +84,71 @@ def test_operations_after_close():
 
     with pytest.raises(ValueError):
         bus.write(make_message(1))
+
+
+def test_write_many_and_read_many():
+    bus = OrderMessageBus(4)
+    try:
+        messages = [make_message(i) for i in range(1, 4)]
+
+        bus.write_many(messages)
+        received = bus.read_many(3)
+
+        order_ids = [decode_order(msg).order_id for msg in received]
+
+        assert order_ids == [1, 2, 3]
+        assert bus.is_empty()
+    finally:
+        bus.close()
+
+
+def test_batch_fifo_order_across_wraparound():
+    bus = OrderMessageBus(4)
+    try:
+        bus.write_many([make_message(i) for i in range(1, 4)])
+
+        first_batch = bus.read_many(2)
+        assert [decode_order(msg).order_id for msg in first_batch] == [1, 2]
+
+        bus.write_many([make_message(4), make_message(5), make_message(6)])
+
+        remaining = bus.read_many(4)
+        assert [decode_order(msg).order_id for msg in remaining] == [3, 4, 5, 6]
+        assert bus.is_empty()
+    finally:
+        bus.close()
+
+
+def test_write_many_rejects_batch_when_full():
+    bus = OrderMessageBus(3)
+    try:
+        bus.write_many([make_message(1), make_message(2)])
+
+        with pytest.raises(BufferError):
+            bus.write_many([make_message(3), make_message(4)])
+
+        # Failed batch must not partially enter the buffer.
+        received = bus.read_many(3)
+        assert [decode_order(msg).order_id for msg in received] == [1, 2]
+    finally:
+        bus.close()
+
+
+def test_write_many_rejects_invalid_message_size():
+    bus = OrderMessageBus(3)
+    try:
+        with pytest.raises(ValueError):
+            bus.write_many([make_message(1), b"short"])
+
+        assert bus.is_empty()
+    finally:
+        bus.close()
+
+
+def test_read_many_rejects_empty_buffer():
+    bus = OrderMessageBus(2)
+    try:
+        with pytest.raises(BufferError):
+            bus.read_many(1)
+    finally:
+        bus.close()
